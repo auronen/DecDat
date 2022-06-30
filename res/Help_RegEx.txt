@@ -1,0 +1,17 @@
+"A regular expression is a sequence of characters that specifies a search pattern in text. "
+  Source: Wikipedia - Regular expression (https://en.wikipedia.org/wiki/Regular_expression)
+
+The asterisk '*' to search for files is certainly familiar:
+    *.d, *.*
+
+Regular expressions can also be used to reconstruct such a pattern:
+	.*\.d, .*\..*
+
+The dot '.' represents any letter, the asterisk '*' indicates that the preceding character may occur any number of times (even not once).
+'.*' means that any character may occur any number of times in the term you are looking for.
+
+Alternatively, the plus '+' can be used to exclude a non-occurrence:
+	.+\.d, .+\..+
+
+The slash '\' before a dot '.' indicates that it is recognised as a dot, not as an arbitrary character.
+This basic knowledge should be enough to be able to search for symbols consciously. Otherwise, the Wikipedia article will help.

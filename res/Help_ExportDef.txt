@@ -1,0 +1,18 @@
+; A line preceded by a semicolon is evaluated as a comment.
+; The export definition is an emergency solution to be able to export a .dat completely to different files.
+
+; The following setting would export all externals to "_intern\Externals.d", all other symbols to "Misc.d":
+
+938		_intern\Externals.d
+-		Misc.d
+
+; The notation is <SymbolID> <File>, completely ignoring spaces and tabs before, after and between parameters.
+
+; In this case, all writable symbols up to and including 938 are written to the file Externals.d.
+; The '-' means "Up to the last symbol", so from 939 onwards all symbols are exported to Misc.d.
+
+; For a symbol to be "writeable" it must meet the following requirements:
+;	- The name must not contain a dot, so the symbol must be global.
+;	- Das Symbol darf keine interne Konstante/Variable sein, also nicht mit 0xFF beginnen.
+
+; This text is a valid export definition and can be used for testing.
