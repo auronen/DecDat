@@ -15,7 +15,7 @@ public class D2Help {
 		byte[] content = SimpleIO.ReadAllBytes("res/" + fileName);
 
 		if(content == null) {
-			MainForm.Err("Konnte die gesuchte Hilfedatei nicht laden.");
+			MainForm.Err("Could not load the help file.");
 			return;
 		}
 
@@ -26,9 +26,9 @@ public class D2Help {
 			os.close();
 			Desktop.getDesktop().open(out);
 		} catch(FileNotFoundException e) {
-			MainForm.Err("Konnte die Hilfedatei nicht exportieren.");
+			MainForm.Err("Could not export the help file.");
 		} catch(IOException e) {
-			MainForm.Err("Konnte die Hilfedatei nicht anzeigen.");
+			MainForm.Err("Could not display the help file.");
 		}
 
 	}

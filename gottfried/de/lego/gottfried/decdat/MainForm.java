@@ -217,8 +217,8 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		else if(e.getSource() instanceof JMenuItem) {
 			JMenuItem itm = (JMenuItem)e.getSource();
 			switch(itm.getText()) {
-				case "Versionsinfo":
-					JOptionPane.showMessageDialog(frmDecdat, "DecDat\nVersion " + VersionString + "\n\nvon Gottfried - 2012\n& Auronen - 2022", "Versionsinfo", 1);
+				case "Version":
+					JOptionPane.showMessageDialog(frmDecdat, "DecDat\nVersion " + VersionString + "\n\nvon Gottfried - 2012\n& Auronen - 2022", "About", 1);
 					return;
 
 				case "Tokens":
@@ -248,7 +248,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 				case "Into one file...":
 					if(theDat == null) {
-						Err("No DAT file loaded yet.!");
+						Err("No DAT file loaded yet!");
 						return;
 					}
 					if(getSelectedDFile() != null)
@@ -257,7 +257,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					return;
 				case "With export definitions...":
 					if(theDat == null) {
-						Err("No DAT file loaded yet.!");
+						Err("No DAT file loaded yet!");
 						return;
 					}
 					if(getSelectedDirectory() != null)
@@ -475,10 +475,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		mntmAktuellesSymbol.addActionListener(this);
 		mnExportieren.add(mntmAktuellesSymbol);
 
-		JMenu mnHilfe = new JMenu("Hilfe");
+		JMenu mnHilfe = new JMenu("Help");
 		menuBar.add(mnHilfe);
 
-		JMenuItem mntmVersionsinfo = new JMenuItem("Versionsinfo");
+		JMenuItem mntmVersionsinfo = new JMenuItem("Version");
 		mntmVersionsinfo.addActionListener(this);
 		mnHilfe.add(mntmVersionsinfo);
 
@@ -496,7 +496,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		mntmTokens.addActionListener(this);
 		mnHilfe.add(mntmTokens);
 
-		JMenuItem mntmExportdef = new JMenuItem("Exportdefinition");
+		JMenuItem mntmExportdef = new JMenuItem("Export definitions");
 		mntmExportdef.addActionListener(this);
 		mnHilfe.add(mntmExportdef);
 	}

@@ -28,10 +28,10 @@ public class D2FileChooser extends JFileChooser {
 		setFileFilter(f);
 		setFileSelectionMode(mode);
 		if(f == null)
-			setDialogTitle("Bitte Zielordner wählen...");
+			setDialogTitle("Please choose a target directory...");
 		else if(f instanceof DaedalusFileFilter)
-			setDialogTitle("Bitte Scriptdatei wählen...");
+			setDialogTitle("Please choose script file...");
 		else
-			setDialogTitle("Bitte die gewünschte Dat wählen...");
+			setDialogTitle("Please choose a DAT file...");
 	}
 }

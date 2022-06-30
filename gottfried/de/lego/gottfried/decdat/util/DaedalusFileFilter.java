@@ -14,6 +14,6 @@ public class DaedalusFileFilter extends FileFilter {
 
 	@Override
 	public String getDescription() {
-		return "Daedalus-Script (*.d)";
+		return "Daedalus Script (*.d)";
 	}
 }

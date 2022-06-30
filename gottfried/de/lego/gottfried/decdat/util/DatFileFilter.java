@@ -14,6 +14,6 @@ public class DatFileFilter extends FileFilter {
 
 	@Override
 	public String getDescription() {
-		return "Kompilierte Daedalus-Scripte (*.dat)";
+		return "Compiled Daedalus Scripts (*.dat)";
 	}
 }
