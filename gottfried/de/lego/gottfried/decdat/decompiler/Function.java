@@ -191,7 +191,9 @@ public class Function {
 			ifmark.push(code[index].stackPtr);
 			if (!endif.contains(tpos)) {
 				endif.add(tpos);
-				if (lines.size() > 0 && (p = lines.get(0)).right.startsWith("if") && lifon) {
+				//  this is a dirty fix for the problem described here: https://github.com/auronen/DecDat/issues/2
+				//  v
+				if (false && lines.size() > 0 && (p = lines.get(0)).right.startsWith("if") && lifon) {
 					sub = 0;
 					p.right = "else " + p.right;
 					return;
