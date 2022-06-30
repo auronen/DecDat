@@ -310,7 +310,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 	private void initialize() {
 		frmDecdat = new JFrame();
-		frmDecdat.setTitle("DecDat - Auronen Gothic Demo edition");
+		frmDecdat.setTitle("DecDat " + VersionString);
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		int size_x = 1280;
 		int size_y = 800;
