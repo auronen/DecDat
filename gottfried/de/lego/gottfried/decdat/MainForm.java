@@ -282,7 +282,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	@Override
 	public void valueChanged(ListSelectionEvent arg0) {
 		int row = tblResults.getSelectedRow();
-		if(row == lastRow || row == -1)
+		if((row == lastRow && lastRow !=0) || row == -1)
 			return;
 		lastRow = row;
 
