@@ -199,10 +199,12 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	private JComboBox<String>	cbxSearch;
 	private JButton				btnSearch;
 	private JTable				tblSymbol;
+	private JTable				tblSymbol2;
 	private JTextArea			txtrEditor;
 	private JTextArea			txtrEditorop;
 	private JTextArea			txtrEditorexp;
 	private JTabbedPane			tabbedPane;
+	private JTabbedPane			tabbedPane2;
 
 	@Override
 	public void caretUpdate(CaretEvent e) {
@@ -295,11 +297,13 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		tblSymbol.setValueAt(d.offset, 5, 1);
 		tblSymbol.setValueAt(d.parent, 6, 1);
 		tblSymbol.setValueAt(d.contentToString(), 7, 1);
-		tblSymbol.setValueAt(d.filenr, 8, 1);
-		tblSymbol.setValueAt(d.line, 9, 1);
-		tblSymbol.setValueAt(d.line_anz, 10, 1);
-		tblSymbol.setValueAt(d.pos_beg, 11, 1);
-		tblSymbol.setValueAt(d.pos_anz, 12, 1);
+
+		tblSymbol2.setValueAt(d.filenr,   0, 1);
+		tblSymbol2.setValueAt(d.line,     1, 1);
+		tblSymbol2.setValueAt(d.line_anz, 2, 1);
+		tblSymbol2.setValueAt(d.pos_beg,  3, 1);
+		tblSymbol2.setValueAt(d.pos_anz,  4, 1);
+
 		txtrEditor.setText(d.toString());
 		Decompiler p = Decompiler.getOP(d);
 		if(p == null)
@@ -400,6 +404,20 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 						{ "offset", null },
 						{ "parent", null },
 						{ "content", null },
+				},
+				new String[] {
+						"Data", "Value"
+				}));
+		tblSymbol.getColumnModel().getColumn(0).setPreferredWidth(50);
+		tblSymbol.getColumnModel().getColumn(0).setMinWidth(50);
+		tblSymbol.getColumnModel().getColumn(0).setMaxWidth(50);
+		//panel2.add(tblSymbol, BorderLayout.SOUTH);
+
+
+		tblSymbol2 = new JTable();
+		tblSymbol2.setRowSelectionAllowed(false);
+		tblSymbol2.setModel(new D2TableModel(
+				new Object[][] {
 						{ "filenr", null },
 						{ "line", null },
 						{ "line_anz", null },
@@ -409,10 +427,17 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 				new String[] {
 						"Data", "Value"
 				}));
-		tblSymbol.getColumnModel().getColumn(0).setPreferredWidth(50);
-		tblSymbol.getColumnModel().getColumn(0).setMinWidth(50);
-		tblSymbol.getColumnModel().getColumn(0).setMaxWidth(50);
-		panel2.add(tblSymbol, BorderLayout.SOUTH);
+		tblSymbol2.getColumnModel().getColumn(0).setPreferredWidth(50);
+		tblSymbol2.getColumnModel().getColumn(0).setMinWidth(50);
+		tblSymbol2.getColumnModel().getColumn(0).setMaxWidth(50);
+
+
+
+
+		tabbedPane2 = new JTabbedPane(JTabbedPane.TOP);
+		panel2.add(tabbedPane2, BorderLayout.SOUTH);
+		tabbedPane2.addTab("Symbol info", null, tblSymbol, null);
+		tabbedPane2.addTab("Symbol position", null, tblSymbol2, null);
 
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		panel2.add(tabbedPane, BorderLayout.CENTER);
