@@ -21,6 +21,10 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import java.net.URI;
+import java.net.URL;
+import java.net.URISyntaxException;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -219,6 +223,13 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		else if(e.getSource() instanceof JMenuItem) {
 			JMenuItem itm = (JMenuItem)e.getSource();
 			switch(itm.getText()) {
+				case "GitHub":
+					try {
+						openWebpage(new URL("https://github.com/auronen/DecDat").toURI());
+					} catch (Exception err) {
+						err.printStackTrace();
+					}
+					return;
 				case "Version":
 					JOptionPane.showMessageDialog(frmDecdat, "DecDat\nVersion " + VersionString + "\n\nvon Gottfried - 2012\n& Auronen - 2022", "About", 1);
 					return;
@@ -507,6 +518,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		mntmVersionsinfo.addActionListener(this);
 		mnHilfe.add(mntmVersionsinfo);
 
+		JMenuItem mntmGithub = new JMenuItem("GitHub");
+		mntmGithub.addActionListener(this);
+		mnHilfe.add(mntmGithub);
+
 		JMenuItem mntmShowLog = new JMenuItem("Show log");
 		mntmShowLog.addActionListener(this);
 		mnHilfe.add(mntmShowLog);
@@ -524,5 +539,27 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		JMenuItem mntmExportdef = new JMenuItem("Export definitions");
 		mntmExportdef.addActionListener(this);
 		mnHilfe.add(mntmExportdef);
+	}
+
+	public static boolean openWebpage(URI uri) {
+		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+		if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+			try {
+				desktop.browse(uri);
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+	
+	public static boolean openWebpage(URL url) {
+		try {
+			return openWebpage(url.toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
