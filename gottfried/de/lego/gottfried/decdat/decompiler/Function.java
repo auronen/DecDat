@@ -75,9 +75,12 @@ public class Function {
 			{
 				return ((Integer) ((TokenIntParam) t).param).toString();
 			}
-			else if ( col.get(0).type() == Instance && !col.get(0).name.contains(".par")) {
+			else if ( col.get(0).type() == Instance && !col.get(0).name.contains(".par"))
+			{
 				return col.get(0).name + " /*" + ((Integer) ((TokenIntParam) t).param).toString() + "*/";
-			} else {
+			} 
+			else
+			{
 				return ((Integer) ((TokenIntParam) t).param).toString();
 			}
 		}
@@ -97,7 +100,7 @@ public class Function {
 				return decompileCall();
 			case BINOP:
 			case UNOP:
-				return decompileOperation(0);
+				return decompileOperation(0, true);
 			default:
 				break;
 		}
@@ -120,25 +123,29 @@ public class Function {
 		return call.sym.localName() + "(" + ret;
 	}
 
-	private String decompileOperation(int parent) {
+	private String decompileOperation(int parent, boolean first) {
 		Token t = code[index];
-		boolean brackets = t.op.Precedence < parent;
+		// Auronen: ignore the precedence and put brackets everywhere
+		//          the result of the logical expression is correct,
+		//          but it looks weird. 
+		//          TODO: Has to be imporved
+		boolean brackets = true;//t.op.Precedence < parent;
 		StringBuilder ret = new StringBuilder();
 
-		if (brackets)
+		if (brackets && !first)
 			ret.append('(');
 
 		if (t.op.Type == TokenEnum.UNOP) {
 			--index;
 			ret.append(t.op.Operator);
 			if (code[index].op.isOp())
-				ret.append(decompileOperation(t.op.Precedence));
+				ret.append(decompileOperation(t.op.Precedence, false));
 			else
 				ret.append(decompileParameter(0));
 		} else {
 			--index;
 			if (t.op.Type == TokenEnum.BINOP && code[index].op.isOp())
-				ret.append(decompileOperation(t.op.Precedence));
+				ret.append(decompileOperation(t.op.Precedence, false));
 			else
 				ret.append(decompileParameter(0));
 
@@ -156,12 +163,12 @@ public class Function {
 
 			--index;
 			if (t.op.Type == TokenEnum.BINOP && code[index].op.isOp())
-				ret.append(decompileOperation(t.op.Precedence));
+				ret.append(decompileOperation(t.op.Precedence, false));
 			else
 				ret.append(decompileParameter(ptype));
 		}
 
-		if (brackets)
+		if (brackets && !first)
 			ret.append(')');
 
 		return ret.toString();
@@ -210,7 +217,7 @@ public class Function {
 			} else
 				lifon = true;
 			--index;
-			add("if(" + decompileParameter(0) + ") {");
+			add("if (" + decompileParameter(0) + ") {");
 		}
 
 		if (lines.size() <= 1) {
@@ -253,7 +260,7 @@ public class Function {
 				case BINOP:
 				case UNOP:
 				case ASSIGN:
-					add(decompileOperation(0) + ';');
+					add(decompileOperation(0, true) + ';');
 					break;
 				case JUMP:
 					decompileCondition();
