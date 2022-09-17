@@ -69,10 +69,15 @@ public class DatSymbol {
 		offset = s.ReadInt();
 		bitfield = s.ReadInt();
 		filenr = s.ReadInt();
+		filenr = filenr & 0x7FFFF; // 19 bits
 		line = s.ReadInt();
+		line = line & 0x7FFFF; // 19 bits
 		line_anz = s.ReadInt();
+		line_anz = line_anz & 0x7FFFF; // 19 bits
 		pos_beg = s.ReadInt();
+		pos_beg = pos_beg & 0xFFFFFF; // 24 bits
 		pos_anz = s.ReadInt();
+		pos_anz = pos_anz & 0xFFFFFF; // 24 bits
 
 		isLocal = name.contains(".");
 
