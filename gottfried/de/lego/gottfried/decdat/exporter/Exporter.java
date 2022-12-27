@@ -22,7 +22,7 @@ public class Exporter {
 			fos = new FileOutputStream(file);
 			for(DatSymbol sym : syms) {
 				MainForm.Log("export symbol " + sym.name + "(:" + sym.id + ")");
-				fos.write((Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes());
+				fos.write((Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(MainForm.encoding));
 			}
 			fos.close();
 		} catch(FileNotFoundException e) {

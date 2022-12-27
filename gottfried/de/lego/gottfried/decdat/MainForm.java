@@ -74,6 +74,9 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	private static StringBuilder	sb				= new StringBuilder();
 	private static SimpleDateFormat	dfm				= new SimpleDateFormat("HH:mm:ss");
 
+	private static Object[]			encodings		= { "Windows-1250", "Windows-1251", "Windows-1252" };
+	public static String			encoding;
+
 	private static void log(String i, String t) {
 		sb.setLength(0);
 		System.out.println(sb.append('[').append(dfm.format(new Date())).append("] ").append(i).append(":").append(idt.substring(0, indent)).append(t).toString());
@@ -145,6 +148,17 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 	private File getSelectedDirectory() {
 		return file = D2FileChooser.get(null);
+	}
+
+	private boolean selectEncoding() {
+		Object selection = JOptionPane.showInputDialog(null, null, "Select Encoding", JOptionPane.QUESTION_MESSAGE, null, encodings, encodings[0]);
+
+		if(selection == null)
+			return false;
+
+		encoding = selection.toString();
+
+		return (encoding.length() > 0) ? true : false;
 	}
 
 	private void selectDat() {
@@ -253,6 +267,9 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					return;
 
 				case "Open...":
+					if(!selectEncoding())
+						return;
+
 					selectDat();
 					return;
 				case "Quit":

@@ -1,5 +1,8 @@
 package de.lego.gottfried.decdat.dat;
 
+import java.nio.charset.Charset;
+import de.lego.gottfried.decdat.MainForm;
+
 public class DatStream {
 	private byte	stream[];
 	private int		offset;
@@ -36,6 +39,6 @@ public class DatStream {
 		int s = offset;
 		while((char)stream[offset++] != '\n')
 			;
-		return new String(stream, s, offset - s - 1);
+		return new String(stream, s, offset - s - 1, Charset.forName(MainForm.encoding));
 	}
 }
