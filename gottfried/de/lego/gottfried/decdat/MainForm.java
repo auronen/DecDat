@@ -106,6 +106,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		JOptionPane.showMessageDialog(frmDecdat, t, "Information", 1);
 	}
 
+	public static void Warn(String t) {
+		JOptionPane.showMessageDialog(frmDecdat, t, "Warning", 2);
+	}
+
 	public static void main(String[] args) {
 		PrintStream ps;
 		try {
@@ -121,7 +125,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 				LogErr("unhandled exception occured: " + e.toString());
 				e.printStackTrace();
 
-				JOptionPane.showMessageDialog(null, "An unhandled exception has occurred:\n  " + e.toString() + "\n\nDer zugeh�rige Stacktrace ist im Logfile zu finden.", "Unbehandelte Ausnahme", 0);
+				JOptionPane.showMessageDialog(null, "An unhandled exception has occurred:\n  " + e.toString() + "\n\nMore informations in " + logFile, "Unhandled Exception", 0);
 			}
 		});
 
@@ -292,11 +296,11 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					}
 					if(getSelectedDirectory() != null)
 						if(Exporter.ToFile(txtrEditorexp.getText(), file))
-							Inf("The export definition has been completely processed.!");
+							Inf("The export definition has been completely processed!");
 					return;
 				default:
 					if(tblResults.getSelectedRow() == -1) {
-						JOptionPane.showMessageDialog(frmDecdat, "First, you have to select a symbol!", "Warning", 2);
+						Warn("First, you have to select a symbol!");
 						return;
 					}
 					if(getSelectedDFile() != null)

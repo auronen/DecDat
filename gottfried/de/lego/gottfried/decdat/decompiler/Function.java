@@ -39,16 +39,29 @@ public class Function {
 					ret = ts.sym.localName();
 					++index;
 				}
-			} else if (ts.sym.name.charAt(0) == '�') {
-				if (ts.sym.name.equalsIgnoreCase("�INSTANCE_HELP"))
+			} else if (ts.sym.name.charAt(0) == '�' || ts.sym.name.charAt(0) == '˙' || ts.sym.name.charAt(0) == 'ÿ' || ts.sym.name.charAt(0) == 'я') {
+				if (ts.sym.name.equalsIgnoreCase("�INSTANCE_HELP") || ts.sym.name.equalsIgnoreCase("˙INSTANCE_HELP") || ts.sym.name.equalsIgnoreCase("ÿINSTANCE_HELP") || ts.sym.name.equalsIgnoreCase("яINSTANCE_HELP"))
 					ret = "NULL";
 				else {
 					ret = '"' + (String) ts.sym.content[0] + '"';
 				}
 			} else
 				ret = ts.sym.localName();
+
+			int val;
+			if(ts instanceof TokenArray)
+				val = ((TokenArray) ts).offset;
+			else
+				val = 0;
+
+			if(ts.sym.name.equalsIgnoreCase("c_npc.aivar"))
+				for(DatSymbol s : MainForm.theDat.Symbols)
+					if(s.name.toLowerCase().startsWith("aiv_") && (int)s.content[0] == val)
+						return ret + "[" + s.name + "]" + " /*aivar " + val + "*/";
+
 			if (ts instanceof TokenArray)
-				ret += "[" + ((TokenArray) ts).offset + "]";
+				ret += "[" + val + "]";
+
 			return ret;
 		}
 
@@ -65,30 +78,12 @@ public class Function {
 		// Auronen
 		int intParam = (Integer) ((TokenIntParam) t).param;
 
-		if (intParam > 60 )
-		{
-			// return the name of the symbol under the id instead
-			List<DatSymbol> col;
-			col = MainForm.theDat.getAllSymbolIDs(String.valueOf(intParam));
-			
-			if (col.size() == 0)
-			{
-				return ((Integer) ((TokenIntParam) t).param).toString();
-			}
-			else if ( col.get(0).type() == Instance && !col.get(0).name.contains(".par"))
-			{
-				return col.get(0).name + " /*" + ((Integer) ((TokenIntParam) t).param).toString() + "*/";
-			} 
-			else
-			{
-				return ((Integer) ((TokenIntParam) t).param).toString();
-			}
-		}
-		else
-		{
-			return ((Integer) ((TokenIntParam) t).param).toString();
-		}
+		if(intParam > 60)
+			for(DatSymbol s : MainForm.theDat.Symbols)
+				if(s.id == intParam && s.type() == Instance && !s.name.contains(".par"))
+					return s.name + " /*" + ((Integer) ((TokenIntParam) t).param).toString() + "*/";
 
+		return ((Integer) ((TokenIntParam) t).param).toString();
 	}
 
 	private String decompileParameter(int forceParam) {

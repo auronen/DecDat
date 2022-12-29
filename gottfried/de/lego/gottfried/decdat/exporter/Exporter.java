@@ -8,34 +8,70 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import java.nio.charset.Charset;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.SwingWorker;
+
 import de.lego.gottfried.decdat.MainForm;
 import de.lego.gottfried.decdat.dat.DatSymbol;
 import de.lego.gottfried.decdat.decompiler.Decompiler;
 import de.lego.gottfried.util.Pair;
 
 public class Exporter {
+	private static boolean jobDone;
 	private static boolean toFile(Collection<DatSymbol> syms, File file) {
 		FileOutputStream fos;
 		try {
 			file.getParentFile().mkdirs();
-
 			fos = new FileOutputStream(file);
-			for(DatSymbol sym : syms) {
-				MainForm.Log("export symbol " + sym.name + "(:" + sym.id + ")");
-				fos.write((Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(MainForm.encoding));
-			}
+			int max = syms.size();
+			jobDone = false;
+
+			JOptionPane pane = new JOptionPane("Information", JOptionPane.INFORMATION_MESSAGE, JOptionPane.PLAIN_MESSAGE);
+			JDialog dialog = pane.createDialog(MainForm.frmDecdat, "Exporting...");
+			JLabel label = new JLabel("0 / " + max, JLabel.CENTER);
+			JProgressBar bar = new JProgressBar(0, max);
+			pane.setOptions(new Object[]{});
+			pane.add(label, 1);
+			pane.add(bar, 2);
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+			SwingWorker<Void, Void> sw = new SwingWorker<Void,Void>() {
+				@Override
+				protected Void doInBackground() throws Exception {
+					for(DatSymbol sym : syms) {
+						label.setText(sym.id + " / " + max);
+						bar.setValue(sym.id);
+						MainForm.Log("export symbol " + sym.name + "(:" + sym.id + ")");
+						fos.write((Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
+					}
+					return null;
+				}
+
+				@Override
+				protected void done() {
+					jobDone = true;
+					dialog.dispose();
+				}
+			};
+
+			sw.execute();
+			dialog.setVisible(true);
 			fos.close();
 		} catch(FileNotFoundException e) {
-			MainForm.LogErr("file '" + file + "' not found");
-			MainForm.Err("Datei konnte nicht gefunden werden.");
+			MainForm.LogErr("file '" + file + "' not found.");
+			MainForm.Err("File '" + file + "' not found.");
 			return false;
 		} catch(IOException e) {
 			MainForm.LogErr("error while writing to the file '" + file + "'");
-			MainForm.Err("Fehler beim Beschreiben der Datei.\nGenauere Informationen sind im Logfile zu finden.");
+			MainForm.Err("Error while writing to the file '" + file + "'");
 			e.printStackTrace();
 			return false;
 		}
-		return true;
+		return jobDone;
 	}
 
 	public static boolean ToFile(Collection<DatSymbol> syms, File file) {
@@ -89,20 +125,20 @@ public class Exporter {
 					cID = Integer.valueOf(tok[0]);
 					if(cID <= lastID) {
 						MainForm.LogErr("cannot export to lower target-id at line " + cLN);
-						MainForm.Err("Die Ziel-ID darf nicht niedriger oder gleich der vorherigen sein. (Zeile " + cLN + ")");
+						MainForm.Err("Cannot export to lower or equal target-id at line " + cLN);
 						return false;
 					}
 					if(cID >= MainForm.theDat.Symbols.length) {
 						MainForm.LogErr("id is too high! at line " + cLN);
-						MainForm.Err("Die Ziel-ID darf die Anzahl der Symbole nicht überschreiten. (Zeile " + cLN + ")");
+						MainForm.Err("Id is too high! at line " + cLN);
 						return false;
 					}
 				}
 				lastID = cID;
 				parsed.add(Pair.getIS(cID, (tok.length >= 2 ? tok[1] : null)));
 			} catch(Exception e) {
-				MainForm.LogErr("cannot parse token as number at line " + cLN);
-				MainForm.Err("'" + tok[0] + "' kann nicht als Zahl geparst werden. (Zeile " + cLN + ")");
+				MainForm.LogErr("cannot parse token '" + tok[0] + "' as number at line " + cLN);
+				MainForm.Err("Cannot parse token '" + tok[0] + "' as number at line " + cLN);
 				return false;
 			}
 
