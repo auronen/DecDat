@@ -6,7 +6,6 @@ import static de.lego.gottfried.decdat.dat.DatSymbol.Type.Instance;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Stack;
-import java.util.List;
 
 import de.lego.gottfried.decdat.MainForm;
 import de.lego.gottfried.decdat.dat.DatSymbol;
@@ -31,6 +30,11 @@ public class Function {
 			TokenSymbolParam ts = (TokenSymbolParam) t;
 			String ret;
 			if (ts.sym.hasFlags(DatSymbol.Flag.Classvar)) {
+ 
+				// by bfyryNy - fix for "forward declaration of member fields"
+				if (index == 0)
+					return ts.sym.nameGl;
+
 				t = code[--index];
 				if (t.op == TokenEnum.zPAR_TOK_SETINSTANCE) {
 					DatSymbol sym = ((TokenSymbolParam) t).sym;
@@ -54,10 +58,12 @@ public class Function {
 			else
 				val = 0;
 
-			if(ts.sym.name.equalsIgnoreCase("c_npc.aivar"))
-				for(DatSymbol s : MainForm.theDat.Symbols)
-					if(s.name.toLowerCase().startsWith("aiv_") && (int)s.content[0] == val)
-						return ret + "[" + s.name + "]" + " /*aivar " + val + "*/";
+			// TODO: Add config for this option
+
+			//if(ts.sym.name.equalsIgnoreCase("c_npc.aivar"))
+			//	for(DatSymbol s : MainForm.theDat.Symbols)
+			//		if(s.name.toLowerCase().startsWith("aiv_") && (int)s.content[0] == val)
+			//			return ret + "[" + s.name + "]" + " /*aivar " + val + "*/";
 
 			if (ts instanceof TokenArray)
 				ret += "[" + val + "]";
