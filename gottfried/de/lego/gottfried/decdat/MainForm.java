@@ -440,6 +440,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 		cbxSearch = new JComboBox<String>();
 		cbxSearch.setModel(new DefaultComboBoxModel<String>(new String[] { "ID", "Name", "Type" }));
+		cbxSearch.setSelectedIndex(1);
 		panel1.add(cbxSearch, BorderLayout.WEST);
 
 		btnSearch = new JButton("Search");
