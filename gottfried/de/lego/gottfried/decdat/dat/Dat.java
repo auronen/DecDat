@@ -144,7 +144,7 @@ public class Dat {
 		regex = regex.toLowerCase();
 		LinkedList<DatSymbol> l = new LinkedList<DatSymbol>();
 		for(DatSymbol s : Symbols)
-			if(s.name.matches(regex))
+			if(s.name.matches(regex) || s.name.contains(regex))
 				l.add(s);
 		return l;
 	}
@@ -171,7 +171,7 @@ public class Dat {
 		regex = regex.toLowerCase();
 		LinkedList<DatSymbol> l = new LinkedList<DatSymbol>();
 		for(DatSymbol s : Symbols)
-			if(s.getTypeString().matches(regex))
+			if(s.getTypeString().matches(regex) || s.getTypeString().contains(regex))
 				l.add(s);
 		return l;
 	}
