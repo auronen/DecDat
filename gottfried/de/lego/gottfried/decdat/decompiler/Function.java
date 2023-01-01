@@ -124,14 +124,14 @@ public class Function {
 			String prm = decompileParameter(params[i].type());
 			if (MainForm.ouLoaded && new String("ai_output").equals(call.sym.name) && i == 2)
 			{
-				comment = " //" + MainForm.ouLib.getText(prm);
+				comment = "; //" + MainForm.ouLib.getText(prm);
 			}
 			ret = prm + ret;
 			if (i > 0)
 				ret = ", " + ret;
 		}
 
-		return call.sym.localName() + "(" + ret + ";" + comment;
+		return call.sym.localName() + "(" + ret + /*"; " +*/ comment;
 	}
 
 	private String decompileOperation(int parent, boolean first) {
@@ -260,7 +260,11 @@ public class Function {
 		while (index >= 0) {
 			switch ((currTok = code[index]).op.Type) {
 				case CALL:
-					add(decompileCall());
+					String line = decompileCall();
+					if (line.contains(";"))
+						add(line);
+					else 
+						add(line + ";");
 					break;
 				case RETURN:
 					add(decompileReturn());
@@ -281,15 +285,23 @@ public class Function {
 							  id = m.group(1);
 						}
 						if (id.length() == 0) {
-							add(ass + ';');
+							if (ass.endsWith(";"))
+								add(ass);
+							else
+								add(ass + ';');
 							break;
 						} 
 						String text = MainForm.ouLib.getText(id);
-						if (text.length() == 0)
-							comment = text;
+						if (text.length() == 0) {
+							if (ass.contains(";")) {
+								comment = text;
+							}
+							comment = ";";
+						}
 						else
-							comment = " //" + text;
-						add(ass + ';' + comment);
+							comment = "; //" + text;
+						add(ass + comment);
+						break;
 					}
 					else
 						add(decompileOperation(0, true) + ';');
