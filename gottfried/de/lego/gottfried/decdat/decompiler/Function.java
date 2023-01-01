@@ -6,6 +6,8 @@ import static de.lego.gottfried.decdat.dat.DatSymbol.Type.Instance;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.lego.gottfried.decdat.MainForm;
 import de.lego.gottfried.decdat.dat.DatSymbol;
@@ -48,6 +50,7 @@ public class Function {
 					ret = "NULL";
 				else {
 					ret = '"' + (String) ts.sym.content[0] + '"';
+					return ret;
 				}
 			} else
 				ret = ts.sym.localName();
@@ -113,15 +116,21 @@ public class Function {
 
 		DatSymbol params[] = call.sym.getParameters();
 
+		String comment = ""; 
 		String ret = ")";
 		for (int i = params.length - 1; i >= 0; --i) {
 			--index;
-			ret = decompileParameter(params[i].type()) + ret;
+			String prm = decompileParameter(params[i].type());
+			if (MainForm.ouLoaded && new String("ai_output").equals(call.sym.name) && i == 2)
+			{
+				comment = " //" + MainForm.ouLib.getText(prm);
+			}
+			ret = prm + ret;
 			if (i > 0)
 				ret = ", " + ret;
 		}
 
-		return call.sym.localName() + "(" + ret;
+		return call.sym.localName() + "(" + ret + ";" + comment;
 	}
 
 	private String decompileOperation(int parent, boolean first) {
@@ -250,18 +259,39 @@ public class Function {
 		while (index >= 0) {
 			switch ((currTok = code[index]).op.Type) {
 				case CALL:
-					add(decompileCall() + ';');
+					add(decompileCall());
 					break;
 				case RETURN:
 					add(decompileReturn());
 					break;
 				case PUSH:
-					add(decompilePush(0) + ';');
+					add(decompilePush(0) + ";");
 					break;
 				case BINOP:
 				case UNOP:
 				case ASSIGN:
-					add(decompileOperation(0, true) + ';');
+					if (MainForm.ouLoaded)
+					{
+						String ass = decompileOperation(0, true);
+						Pattern p = Pattern.compile("\"([^\"]*)\"");
+						Matcher m = p.matcher(ass);
+						String id = "", comment = "";
+						while (m.find()) {
+							  id = m.group(1);
+						}
+						if (id.length() == 0) {
+							add(ass + ';');
+							break;
+						} 
+						String text = MainForm.ouLib.getText(id);
+						if (text.length() == 0)
+							comment = text;
+						else
+							comment = " //" + text;
+						add(ass + ';' + comment);
+					}
+					else
+						add(decompileOperation(0, true) + ';');
 					break;
 				case JUMP:
 					decompileCondition();

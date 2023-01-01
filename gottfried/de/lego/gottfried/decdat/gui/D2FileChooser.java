@@ -8,6 +8,7 @@ import javax.swing.filechooser.FileFilter;
 
 import de.lego.gottfried.decdat.MainForm;
 import de.lego.gottfried.decdat.util.DaedalusFileFilter;
+import de.lego.gottfried.decdat.util.OUFileFilter;
 
 
 public class D2FileChooser extends JFileChooser {
@@ -31,6 +32,8 @@ public class D2FileChooser extends JFileChooser {
 			setDialogTitle("Please choose a target directory...");
 		else if(f instanceof DaedalusFileFilter)
 			setDialogTitle("Please choose script file...");
+		else if(f instanceof OUFileFilter)
+			setDialogTitle("Please choose a OU.bin file...");
 		else
 			setDialogTitle("Please choose a DAT file...");
 	}

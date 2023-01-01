@@ -56,18 +56,27 @@ import de.lego.gottfried.decdat.exporter.Exporter;
 import de.lego.gottfried.decdat.gui.D2FileChooser;
 import de.lego.gottfried.decdat.gui.D2Help;
 import de.lego.gottfried.decdat.gui.D2TableModel;
+import de.lego.gottfried.decdat.ou.zCCSBlock;
+import de.lego.gottfried.decdat.ou.zCCSLib;
 import de.lego.gottfried.decdat.util.DaedalusFileFilter;
 import de.lego.gottfried.decdat.util.DatFileFilter;
+import de.lego.gottfried.decdat.util.OUFileFilter;
+import de.lego.gottfried.decdat.parser.Ou;
 
 public class MainForm implements CaretListener, ActionListener, ListSelectionListener {
-	private static final String		VersionString	= "1.0b";
+	private static final String		VersionString	= "1.0c";
 	private static final String		logFile			= "d2.log";
 
 	protected static MainForm		inst;
 	private List<DatSymbol>			currCol			= new LinkedList<DatSymbol>();
+	private List<zCCSBlock>			currColOU		= new LinkedList<zCCSBlock>();
 	private File					file;
 
 	public static Dat				theDat;
+	public static Ou				theOU;
+
+	public static zCCSLib			ouLib;
+	public static boolean			ouLoaded;
 
 	private static int				indent			= 2;
 	private static final String		idt				= "               ";
@@ -146,6 +155,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		return file = D2FileChooser.get(DatFileFilter.inst);
 	}
 
+	private File getSelectedOUFile() {
+		return file = D2FileChooser.get(OUFileFilter.inst);
+	}
+
 	private File getSelectedDFile() {
 		return file = D2FileChooser.get(DaedalusFileFilter.inst);
 	}
@@ -165,6 +178,18 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		return (encoding.length() > 0) ? true : false;
 	}
 
+	private boolean OUdialogue() {
+		int selection = JOptionPane.showConfirmDialog(null,
+		"Do you want to parse OU.bin?", "Dialoge parsing.",
+		JOptionPane.YES_NO_OPTION,
+		JOptionPane.QUESTION_MESSAGE);
+
+		if(selection == JOptionPane.NO_OPTION)
+			return false;
+		else
+			return true;
+	}
+
 	private void selectDat() {
 		if(getSelectedFile() == null)
 			return;
@@ -178,6 +203,23 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		}
 
 		showSymbols(theDat.SymbolsC);
+	}
+
+	private void selectOU() {
+		if(getSelectedOUFile() == null)
+			return;
+
+		try {
+			theOU = Ou.fromFile(file.getAbsolutePath());
+		} catch (Exception e) {
+			e.printStackTrace();
+			ouLoaded = false;
+			return;
+		}
+
+		ouLib = new zCCSLib(theOU);
+		ouLoaded = true;
+		//showOU(ou_lib.blocks);
 	}
 
 	private void searchSymbols() {
@@ -212,6 +254,28 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		tblModel.setRowCount(0);
 		for(DatSymbol s : sym)
 			tblModel.addRow(new Object[] { s.id, s.name, s.getTypeString() });
+	}
+
+	/**
+	 * This function prints all parsed dialogues 
+	 * @param sym List of all dialogues loaded from the OU.bin file
+	 */
+	private void showOU(List<zCCSBlock> sym) {
+		if(currColOU.equals(sym)) {
+			Log("ignore request.");
+			return;
+		}
+		currColOU = sym;
+		tblModel.setRowCount(0);
+		tblResults.getTableHeader().getColumnModel().getColumn(0).setHeaderValue("ID");
+		tblResults.getTableHeader().getColumnModel().getColumn(0).setWidth(70);
+		tblResults.getTableHeader().getColumnModel().getColumn(1).setHeaderValue("Text");
+		tblResults.getTableHeader().getColumnModel().getColumn(1).setPreferredWidth(70);
+		tblResults.getTableHeader().getColumnModel().getColumn(2).setHeaderValue("WAV File");
+		tblResults.getTableHeader().getColumnModel().getColumn(2).setPreferredWidth(30);
+
+		for(zCCSBlock s : sym)
+			tblModel.addRow(new Object[] { s.id, s.text, s.wavFile });
 	}
 
 	public static JFrame		frmDecdat;
@@ -249,7 +313,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					}
 					return;
 				case "Version":
-					JOptionPane.showMessageDialog(frmDecdat, "DecDat\nVersion " + VersionString + "\n\nvon Gottfried - 2012\n& Auronen - 2022", "About", 1);
+					JOptionPane.showMessageDialog(frmDecdat, "DecDat\nVersion " + VersionString + "\n\nvon Gottfried - 2012\n& Auronen - 2022\n& Auronen & fyryNy - 2023", "About", 1);
 					return;
 
 				case "Tokens":
@@ -270,11 +334,13 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					}
 					return;
 
-				case "Open...":
+				case "Open DAT...":
 					if(!selectEncoding())
 						return;
 
 					selectDat();
+					if (OUdialogue())
+						selectOU();
 					return;
 				case "Quit":
 					System.exit(0);
@@ -420,6 +486,8 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 		panel0.add(tblResults.getTableHeader(), BorderLayout.NORTH);
 
+
+
 		JPanel panel2 = new JPanel();
 		splitPane.setRightComponent(panel2);
 		panel2.setLayout(new BorderLayout(0, 0));
@@ -505,7 +573,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		JMenu mnDatei = new JMenu("File");
 		menuBar.add(mnDatei);
 
-		JMenuItem mntmOpen = new JMenuItem("Open...");
+		JMenuItem mntmOpen = new JMenuItem("Open DAT...");
 		mntmOpen.addActionListener(this);
 		mnDatei.add(mntmOpen);
 
