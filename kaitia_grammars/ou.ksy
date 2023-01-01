@@ -5,7 +5,7 @@ meta:
 
   endian: le
 doc: |
-  OU class represents the whole zCCSLib serialized in OU.bin files
+  Auronen did this
 meta:
 
 seq:
@@ -19,22 +19,10 @@ seq:
 types:
   header:
     seq:
-      - id: magic
+      - id: crap
         type: ou_string
-      - id: version
-        type: ou_string
-      - id: archiver_class
-        type: ou_string
-      - id: archiver_type
-        type: ou_string
-      - id: save_game
-        type: ou_string
-      - id: date
-        type: ou_string
-      - id: user
-        type: ou_string
-      - id: end
-        type: ou_string
+        repeat: until
+        repeat-until: _.str == 'END'
 
   property:
     seq:
@@ -145,10 +133,3 @@ types:
         type: str
         terminator: 0xa
         encoding: ASCII
-
-  block:
-    seq:
-      - id: block_name
-      - id: nom_of_block
-      - id: blocName
-      - id: 

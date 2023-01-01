@@ -342,33 +342,21 @@ public class Ou extends KaitaiStruct {
             _read();
         }
         private void _read() {
-            this.magic = new OuString(this._io, this, _root);
-            this.version = new OuString(this._io, this, _root);
-            this.archiverClass = new OuString(this._io, this, _root);
-            this.archiverType = new OuString(this._io, this, _root);
-            this.saveGame = new OuString(this._io, this, _root);
-            this.date = new OuString(this._io, this, _root);
-            this.user = new OuString(this._io, this, _root);
-            this.end = new OuString(this._io, this, _root);
+            this.crap = new ArrayList<OuString>();
+            {
+                OuString _it;
+                int i = 0;
+                do {
+                    _it = new OuString(this._io, this, _root);
+                    this.crap.add(_it);
+                    i++;
+                } while (!(_it.str().equals("END")));
+            }
         }
-        private OuString magic;
-        private OuString version;
-        private OuString archiverClass;
-        private OuString archiverType;
-        private OuString saveGame;
-        private OuString date;
-        private OuString user;
-        private OuString end;
+        private ArrayList<OuString> crap;
         private Ou _root;
         private Ou _parent;
-        public OuString magic() { return magic; }
-        public OuString version() { return version; }
-        public OuString archiverClass() { return archiverClass; }
-        public OuString archiverType() { return archiverType; }
-        public OuString saveGame() { return saveGame; }
-        public OuString date() { return date; }
-        public OuString user() { return user; }
-        public OuString end() { return end; }
+        public ArrayList<OuString> crap() { return crap; }
         public Ou _root() { return _root; }
         public Ou _parent() { return _parent; }
     }
