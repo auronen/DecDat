@@ -76,7 +76,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	public static Ou				theOU;
 
 	public static zCCSLib			ouLib;
-	public static boolean			ouLoaded;
+	public static boolean			ouLoaded = false;
 
 	private static int				indent			= 2;
 	private static final String		idt				= "               ";
