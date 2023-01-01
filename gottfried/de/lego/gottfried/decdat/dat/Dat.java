@@ -3,12 +3,7 @@ package de.lego.gottfried.decdat.dat;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import de.lego.gottfried.decdat.MainForm;
 
@@ -19,6 +14,7 @@ public class Dat {
 	public DatSymbol				Symbols[];
 	public LinkedList<DatSymbol>	SymbolsC;
 	public LinkedList<DatSymbol>	SymbolsRegular;
+	public Map<Integer, DatSymbol>	IdSymbolPairs;
 	public int						sortedTable[];
 	public DatSymbol				sortedSymbolTable[];
 	public byte						stack[];
@@ -84,9 +80,11 @@ public class Dat {
 		Symbols = new DatSymbol[sortedTable.length];
 		SymbolsC = new LinkedList<DatSymbol>();
 		SymbolsRegular = new LinkedList<DatSymbol>();
+		IdSymbolPairs = new HashMap<Integer, DatSymbol>();
 		for(int i = 0; i < Symbols.length; ++i) {
 			Symbols[i] = new DatSymbol(this, Stream);
 			SymbolsC.add(Symbols[i]);
+			IdSymbolPairs.put(Symbols[i].id, Symbols[i]);
 			if(Symbols[i].name.length() != 0 && !Symbols[i].isLocal && Symbols[i].name.charAt(0) != 0xFF)
 				SymbolsRegular.add(Symbols[i]);
 		}

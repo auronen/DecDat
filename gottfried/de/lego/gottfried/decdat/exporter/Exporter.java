@@ -24,6 +24,7 @@ public class Exporter {
 	private static boolean jobDone;
 	private static boolean toFile(Collection<DatSymbol> syms, File file) {
 		FileOutputStream fos;
+		long startTime = System.nanoTime();
 		try {
 			file.getParentFile().mkdirs();
 			fos = new FileOutputStream(file);
@@ -48,12 +49,12 @@ public class Exporter {
 						MainForm.Log("export symbol " + sym.name + "(:" + sym.id + ")");
 						fos.write((Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
 					}
+					jobDone = true;
 					return null;
 				}
 
 				@Override
 				protected void done() {
-					jobDone = true;
 					dialog.dispose();
 				}
 			};
@@ -71,6 +72,9 @@ public class Exporter {
 			e.printStackTrace();
 			return false;
 		}
+		long finishTime = System.nanoTime();
+		long elapsedTime = (finishTime - startTime)/1000000;
+		MainForm.Log("elapsed execution time: " + elapsedTime + "ms");
 		return jobDone;
 	}
 

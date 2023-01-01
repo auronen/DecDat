@@ -84,10 +84,11 @@ public class Function {
 		// Auronen
 		int intParam = (Integer) ((TokenIntParam) t).param;
 
-		if(intParam > 60)
-			for(DatSymbol s : MainForm.theDat.Symbols)
-				if(s.id == intParam && s.type() == Instance && !s.name.contains(".par"))
-					return s.name + " /*" + ((Integer) ((TokenIntParam) t).param).toString() + "*/";
+		if(intParam > 60) {
+			DatSymbol s = MainForm.theDat.IdSymbolPairs.get(intParam);
+			if(s != null && s.id == intParam && s.type() == Instance && !s.name.contains(".par"))
+				return s.name + " /*" + ((Integer) ((TokenIntParam) t).param).toString() + "*/";
+		}
 
 		return ((Integer) ((TokenIntParam) t).param).toString();
 	}
