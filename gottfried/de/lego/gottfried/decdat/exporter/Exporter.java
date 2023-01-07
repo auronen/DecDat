@@ -43,6 +43,7 @@ public class Exporter {
 			SwingWorker<Void, Void> sw = new SwingWorker<Void,Void>() {
 				@Override
 				protected Void doInBackground() throws Exception {
+					MainForm.Indent(2);
 					for(DatSymbol sym : syms) {
 						label.setText(sym.id + " / " + max);
 						bar.setValue(sym.id);
@@ -59,6 +60,7 @@ public class Exporter {
 
 						MainForm.Log("export symbol " + sym.name + "(:" + sym.id + ")");
 					}
+					MainForm.Indent(-2);
 					jobDone = true;
 					return null;
 				}

@@ -9,7 +9,9 @@ import de.lego.gottfried.decdat.MainForm;
 
 public class Dat {
 	public DatStream				Stream;
+	public String					Dir;
 	public String					Path;
+	public String					Name;
 	public int						Version;
 	public DatSymbol				Symbols[];
 	public LinkedList<DatSymbol>	SymbolsC;
@@ -31,6 +33,8 @@ public class Dat {
 		byte b[];
 		try {
 			File file = new File(Path);
+			Dir = file.getAbsoluteFile().getParent();
+			Name = file.getName();
 			FileInputStream fis = new FileInputStream(file);
 			b = new byte[(int)file.length()];
 			fis.read(b);
@@ -102,7 +106,7 @@ public class Dat {
 				}
 		}
 	}
-	
+
 	private void ReadStack() {
 		int i;
 		MainForm.Log("read datastack of length " + (i = Stream.ReadInt()));

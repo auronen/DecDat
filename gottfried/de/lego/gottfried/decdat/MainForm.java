@@ -174,14 +174,14 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 		encoding = selection.toString();
 
-		return (encoding.length() > 0) ? true : false;
+		return (encoding.length() > 0);
 	}
 
 	private boolean OUdialogue() {
 		int selection = JOptionPane.showConfirmDialog(null,
-		"Do you want to parse OU.bin?", "Dialoge parsing.",
-		JOptionPane.YES_NO_OPTION,
-		JOptionPane.QUESTION_MESSAGE);
+				"Do you want to parse OU.bin?", "Dialoge parsing.",
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE);
 
 		if(selection == JOptionPane.NO_OPTION)
 			return false;
@@ -189,19 +189,21 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 			return true;
 	}
 
-	private void selectDat() {
+	private boolean selectDat() {
 		if(getSelectedFile() == null)
-			return;
+			return false;
 
 		theDat = new Dat(file.getAbsolutePath());
 
 		if(!theDat.fileOk) {
 			Err("The specified DAT file could not be loaded.");
 			showSymbols(null);
-			return;
+			return false;
 		}
 
 		showSymbols(theDat.SymbolsC);
+
+		return true;
 	}
 
 	private void selectOU() {
@@ -226,7 +228,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		String[] lines = txtrEditorSubstitution.getText().split("\\n");
 		for(String line : lines) {
 			line = line.trim();
-			if(line.length() <= 0 || line.charAt(0) == ';')
+			if(line.length() == 0 || line.charAt(0) == ';')
 				continue;
 			String[] sub = line.split("[ \\t]+");
 
@@ -236,10 +238,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 			sub[0] = sub[0].trim().toLowerCase();
 			sub[1] = sub[1].trim().toLowerCase();
 
-			if(sub[0].length() <= 0 || sub[1].length() <= 0)
+			if(sub[0].length() == 0 || sub[1].length() == 0)
 				continue;
 
-				tokenPrefixes.put(sub[0], sub[1]);
+			tokenPrefixes.put(sub[0], sub[1]);
 		}
 	}
 
@@ -278,7 +280,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	}
 
 	/**
-	 * This function prints all parsed dialogues 
+	 * This function prints all parsed dialogues
 	 * @param sym List of all dialogues loaded from the OU.bin file
 	 */
 	private void showOU(List<zCCSBlock> sym) {
@@ -361,8 +363,9 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 						return;
 
 					createTokenPrefixesMap();
-					selectDat();
-					if (OUdialogue())
+					if(!selectDat())
+						return;
+					if (theDat.Name.equalsIgnoreCase("gothic.dat") || OUdialogue())
 						selectOU();
 					return;
 				case "Quit":
@@ -681,7 +684,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		}
 		return false;
 	}
-	
+
 	public static boolean openWebpage(URL url) {
 		try {
 			return openWebpage(url.toURI());
