@@ -17,9 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import java.net.URI;
 import java.net.URL;
@@ -64,27 +62,28 @@ import de.lego.gottfried.decdat.util.OUFileFilter;
 import de.lego.gottfried.decdat.parser.Ou;
 
 public class MainForm implements CaretListener, ActionListener, ListSelectionListener {
-	private static final String		VersionString	= "1.0c";
-	private static final String		logFile			= "d2.log";
+	private static final String			VersionString	= "1.0c";
+	private static final String			logFile			= "d2.log";
 
-	protected static MainForm		inst;
-	private List<DatSymbol>			currCol			= new LinkedList<DatSymbol>();
-	private List<zCCSBlock>			currColOU		= new LinkedList<zCCSBlock>();
-	private File					file;
+	protected static MainForm			inst;
+	private List<DatSymbol>				currCol			= new LinkedList<DatSymbol>();
+	private List<zCCSBlock>				currColOU		= new LinkedList<zCCSBlock>();
+	private File						file;
 
-	public static Dat				theDat;
-	public static Ou				theOU;
+	public static Dat					theDat;
+	public static Ou					theOU;
 
-	public static zCCSLib			ouLib;
-	public static boolean			ouLoaded = false;
+	public static zCCSLib				ouLib;
+	public static boolean				ouLoaded = false;
 
-	private static int				indent			= 2;
-	private static final String		idt				= "               ";
-	private static StringBuilder	sb				= new StringBuilder();
-	private static SimpleDateFormat	dfm				= new SimpleDateFormat("HH:mm:ss");
+	private static int					indent			= 2;
+	private static final String			idt				= "               ";
+	private static StringBuilder		sb				= new StringBuilder();
+	private static SimpleDateFormat		dfm				= new SimpleDateFormat("HH:mm:ss");
 
-	private static Object[]			encodings		= { "Windows-1250", "Windows-1251", "Windows-1252" };
-	public static String			encoding;
+	private static Object[]				encodings		= { "Windows-1250", "Windows-1251", "Windows-1252" };
+	public static String				encoding;
+	public static Map<String, String>	tokenPrefixes;
 
 	private static void log(String i, String t) {
 		sb.setLength(0);
@@ -175,14 +174,14 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 		encoding = selection.toString();
 
-		return (encoding.length() > 0) ? true : false;
+		return (encoding.length() > 0);
 	}
 
 	private boolean OUdialogue() {
 		int selection = JOptionPane.showConfirmDialog(null,
-		"Do you want to parse OU.bin?", "Dialoge parsing.",
-		JOptionPane.YES_NO_OPTION,
-		JOptionPane.QUESTION_MESSAGE);
+				"Do you want to parse OU.bin?", "Dialoge parsing.",
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE);
 
 		if(selection == JOptionPane.NO_OPTION)
 			return false;
@@ -190,19 +189,21 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 			return true;
 	}
 
-	private void selectDat() {
+	private boolean selectDat() {
 		if(getSelectedFile() == null)
-			return;
+			return false;
 
 		theDat = new Dat(file.getAbsolutePath());
 
 		if(!theDat.fileOk) {
 			Err("The specified DAT file could not be loaded.");
 			showSymbols(null);
-			return;
+			return false;
 		}
 
 		showSymbols(theDat.SymbolsC);
+
+		return true;
 	}
 
 	private void selectOU() {
@@ -220,6 +221,28 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		ouLib = new zCCSLib(theOU);
 		ouLoaded = true;
 		//showOU(ou_lib.blocks);
+	}
+
+	private void createTokenPrefixesMap() {
+		tokenPrefixes = new HashMap<String,String>();
+		String[] lines = txtrEditorSubstitution.getText().split("\\n");
+		for(String line : lines) {
+			line = line.trim();
+			if(line.length() == 0 || line.charAt(0) == ';')
+				continue;
+			String[] sub = line.split("[ \\t]+");
+
+			if(sub.length < 2)
+				continue;
+
+			sub[0] = sub[0].trim().toLowerCase();
+			sub[1] = sub[1].trim().toLowerCase();
+
+			if(sub[0].length() == 0 || sub[1].length() == 0)
+				continue;
+
+			tokenPrefixes.put(sub[0], sub[1]);
+		}
 	}
 
 	private void searchSymbols() {
@@ -259,7 +282,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	}
 
 	/**
-	 * This function prints all parsed dialogues 
+	 * This function prints all parsed dialogues
 	 * @param sym List of all dialogues loaded from the OU.bin file
 	 */
 	private void showOU(List<zCCSBlock> sym) {
@@ -291,6 +314,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	private JTextArea			txtrEditor;
 	private JTextArea			txtrEditorop;
 	private JTextArea			txtrEditorexp;
+	private JTextArea			txtrEditorSubstitution;
 	private JTabbedPane			tabbedPane;
 	private JTabbedPane			tabbedPane2;
 
@@ -340,8 +364,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					if(!selectEncoding())
 						return;
 
-					selectDat();
-					if (OUdialogue())
+					createTokenPrefixesMap();
+					if(!selectDat())
+						return;
+					if (theDat.Name.equalsIgnoreCase("gothic.dat") || OUdialogue())
 						selectOU();
 					return;
 				case "Quit":
@@ -367,13 +393,19 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 							Inf("The export definition has been completely processed!");
 					return;
 				default:
-					if(tblResults.getSelectedRow() == -1) {
-						Warn("First, you have to select a symbol!");
+					int[] selectedRows = tblResults.getSelectedRows();
+					if(selectedRows.length > 0) {
+						LinkedList<DatSymbol> syms = new LinkedList<DatSymbol>();
+						for(int i = 0; i < selectedRows.length; i++)
+							syms.addLast(theDat.Symbols[(int)tblModel.getValueAt(selectedRows[i], 0)]);
+						if(getSelectedDFile() != null)
+							if(Exporter.ToFile(syms, file))
+								Inf("All selected symbols were successfully exported!");
+					}
+					else {
+						Warn("First, you have to select some symbols!");
 						return;
 					}
-					if(getSelectedDFile() != null)
-						if(Exporter.ToFile(theDat.Symbols[(int)tblModel.getValueAt(tblResults.getSelectedRow(), 0)], file))
-							Inf("The symbol was successfully exported!");
 			}
 
 		}
@@ -450,11 +482,11 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		panel1.add(btnSearch, BorderLayout.EAST);
 
 		tblResults = new JTable();
-		tblResults.setShowHorizontalLines(false);
+		tblResults.setShowHorizontalLines(true);
 		tblResults.getSelectionModel().addListSelectionListener(this);
 		tblResults.setFillsViewportHeight(true);
 		tblResults.setBorder(null);
-		tblResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tblResults.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		tblResults.setModel(tblModel = new D2TableModel(new String[] { "ID", "Symbolname", "Type" }));
 		tblResults.getColumnModel().getColumn(0).setPreferredWidth(50);
 		tblResults.getColumnModel().getColumn(0).setMinWidth(50);
@@ -570,6 +602,15 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		txtrEditorexp.setFont(new Font("Courier New", Font.PLAIN, 13));
 		scrollPane2.setViewportView(txtrEditorexp);
 
+		JScrollPane scrollPane3 = new JScrollPane();
+		tabbedPane.addTab("Token substitution", null, scrollPane3, null);
+
+		txtrEditorSubstitution = new JTextArea();
+		txtrEditorSubstitution.setText(";You need to edit this before loading .DAT file\n\n;aivar\t\taiv_\nattribute\tatr_\nhitchance\tnpc_talent_\nprotection\tprot_\ndamage\t\tdam_index_");
+		txtrEditorSubstitution.setTabSize(4);
+		txtrEditorSubstitution.setFont(new Font("Courier New", Font.PLAIN, 13));
+		scrollPane3.setViewportView(txtrEditorSubstitution);
+
 		JMenuBar menuBar = new JMenuBar();
 		frmDecdat.setJMenuBar(menuBar);
 
@@ -599,7 +640,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 		mnExportieren.add(new JSeparator());
 
-		JMenuItem mntmAktuellesSymbol = new JMenuItem("Only selected Symbol...");
+		JMenuItem mntmAktuellesSymbol = new JMenuItem("Only selected Symbols...");
 		mntmAktuellesSymbol.addActionListener(this);
 		mnExportieren.add(mntmAktuellesSymbol);
 
@@ -645,7 +686,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		}
 		return false;
 	}
-	
+
 	public static boolean openWebpage(URL url) {
 		try {
 			return openWebpage(url.toURI());

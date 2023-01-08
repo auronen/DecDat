@@ -31,8 +31,8 @@ public class Exporter {
 			int max = syms.size();
 			jobDone = false;
 
-			JOptionPane pane = new JOptionPane("Information", JOptionPane.INFORMATION_MESSAGE, JOptionPane.PLAIN_MESSAGE);
-			JDialog dialog = pane.createDialog(MainForm.frmDecdat, "Exporting...");
+			JOptionPane pane = new JOptionPane("Exporting...", JOptionPane.INFORMATION_MESSAGE, JOptionPane.PLAIN_MESSAGE);
+			JDialog dialog = pane.createDialog(MainForm.frmDecdat, "Information");
 			JLabel label = new JLabel("0 / " + max, JLabel.CENTER);
 			JProgressBar bar = new JProgressBar(0, max);
 			pane.setOptions(new Object[]{});
@@ -43,12 +43,24 @@ public class Exporter {
 			SwingWorker<Void, Void> sw = new SwingWorker<Void,Void>() {
 				@Override
 				protected Void doInBackground() throws Exception {
+					MainForm.Indent(2);
 					for(DatSymbol sym : syms) {
 						label.setText(sym.id + " / " + max);
 						bar.setValue(sym.id);
+
+						if (sym.name.charAt(0) == '�' || sym.name.charAt(0) == '˙' || sym.name.charAt(0) == 'ÿ' || sym.name.charAt(0) == 'я')
+							if (sym.name.equalsIgnoreCase("�INSTANCE_HELP") || sym.name.equalsIgnoreCase("˙INSTANCE_HELP") || sym.name.equalsIgnoreCase("ÿINSTANCE_HELP") || sym.name.equalsIgnoreCase("яINSTANCE_HELP"))
+								fos.write(("// " + Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
+							else {
+								MainForm.Log("skipping symbol " + sym.name + "(:" + sym.id + ")");
+								continue;
+							}
+						else
+							fos.write((Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
+
 						MainForm.Log("export symbol " + sym.name + "(:" + sym.id + ")");
-						fos.write((Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
 					}
+					MainForm.Indent(-2);
 					jobDone = true;
 					return null;
 				}
