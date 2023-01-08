@@ -231,7 +231,9 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		else
 			switch(cbxSearch.getSelectedIndex()) {
 				case 0:
-					col = theDat.getAllSymbolIDs(txtKeyword.getText());
+					tblResults.changeSelection(Integer.valueOf(txtKeyword.getText()), 0, false, false);
+					col = theDat.SymbolsC;
+					// col = theDat.getAllSymbolIDs(txtKeyword.getText());
 					break;
 				case 1:
 					col = theDat.getAllSymbolsByName(txtKeyword.getText());
