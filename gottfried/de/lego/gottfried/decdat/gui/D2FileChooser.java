@@ -17,7 +17,6 @@ public class D2FileChooser extends JFileChooser {
 
 	public static File get(FileFilter f) {
 		D2FileChooser c = new D2FileChooser(f, f == null ? JFileChooser.DIRECTORIES_ONLY : JFileChooser.FILES_ONLY);
-		c.setSelectedFile(lastFile);
 		if(c.showOpenDialog(MainForm.frmDecdat) == JFileChooser.APPROVE_OPTION)
 			return lastFile = c.getSelectedFile();
 		return null;
@@ -28,6 +27,12 @@ public class D2FileChooser extends JFileChooser {
 		setMultiSelectionEnabled(false);
 		setFileFilter(f);
 		setFileSelectionMode(mode);
+
+		if(lastFile != null)
+			setSelectedFile(lastFile);
+		else
+			setCurrentDirectory(new File("."));
+
 		if(f == null)
 			setDialogTitle("Please choose a target directory...");
 		else if(f instanceof DaedalusFileFilter)

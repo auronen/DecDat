@@ -63,7 +63,7 @@ public class Function {
 
 			if(MainForm.theDat.tokenSubstitutionsMap.get(ts.sym.localName()) != null)
 				if(MainForm.theDat.tokenSubstitutionsMap.get(ts.sym.localName()).get(val) != null)
-					return ret + "[" + MainForm.theDat.tokenSubstitutionsMap.get(ts.sym.localName()).get(val) + "]" + " /*" + ts.sym.localName() + " " + val + "*/";
+					return ret + "[" + MainForm.theDat.tokenSubstitutionsMap.get(ts.sym.localName()).get(val) + "]" + " /*" + val + "*/";
 
 			if (ts instanceof TokenArray)
 				ret += "[" + val + "]";

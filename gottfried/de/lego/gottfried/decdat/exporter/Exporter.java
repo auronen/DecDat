@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import java.nio.charset.Charset;
+import java.util.Objects;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -22,19 +23,22 @@ import de.lego.gottfried.util.Pair;
 
 public class Exporter {
 	private static boolean jobDone;
+	private static Integer symbolsMax = 0;
+	private static Integer symbolsCount = 0;
 	private static boolean toFile(Collection<DatSymbol> syms, File file) {
 		FileOutputStream fos;
 		long startTime = System.nanoTime();
 		try {
 			file.getParentFile().mkdirs();
 			fos = new FileOutputStream(file);
-			int max = syms.size();
+			symbolsMax = syms.size();
+			symbolsCount = 0;
 			jobDone = false;
 
-			JOptionPane pane = new JOptionPane("Exporting...", JOptionPane.INFORMATION_MESSAGE, JOptionPane.PLAIN_MESSAGE);
+			JOptionPane pane = new JOptionPane("Exporting...", JOptionPane.INFORMATION_MESSAGE);
 			JDialog dialog = pane.createDialog(MainForm.frmDecdat, "Information");
-			JLabel label = new JLabel("0 / " + max, JLabel.CENTER);
-			JProgressBar bar = new JProgressBar(0, max);
+			JLabel label = new JLabel("0 / " + symbolsMax, JLabel.CENTER);
+			JProgressBar bar = new JProgressBar(0, symbolsMax);
 			pane.setOptions(new Object[]{});
 			pane.add(label, 1);
 			pane.add(bar, 2);
@@ -43,24 +47,19 @@ public class Exporter {
 			SwingWorker<Void, Void> sw = new SwingWorker<Void,Void>() {
 				@Override
 				protected Void doInBackground() throws Exception {
-					MainForm.Indent(2);
 					for(DatSymbol sym : syms) {
-						label.setText(sym.id + " / " + max);
-						bar.setValue(sym.id);
+						symbolsCount++;
+						label.setText(symbolsCount + " / " + symbolsMax);
+						bar.setValue(symbolsCount);
 
-						if (sym.name.charAt(0) == '�' || sym.name.charAt(0) == '˙' || sym.name.charAt(0) == 'ÿ' || sym.name.charAt(0) == 'я')
+						if (sym.name.charAt(0) == '�' || sym.name.charAt(0) == '˙' || sym.name.charAt(0) == 'ÿ' || sym.name.charAt(0) == 'я') {
 							if (sym.name.equalsIgnoreCase("�INSTANCE_HELP") || sym.name.equalsIgnoreCase("˙INSTANCE_HELP") || sym.name.equalsIgnoreCase("ÿINSTANCE_HELP") || sym.name.equalsIgnoreCase("яINSTANCE_HELP"))
-								fos.write(("// " + Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
-							else {
-								MainForm.Log("skipping symbol " + sym.name + "(:" + sym.id + ")");
-								continue;
-							}
+								fos.write(("// " + Objects.requireNonNull(Decompiler.get(sym)).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
+						}
 						else
-							fos.write((Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
-
-						MainForm.Log("export symbol " + sym.name + "(:" + sym.id + ")");
+							fos.write((Objects.requireNonNull(Decompiler.get(sym)).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
 					}
-					MainForm.Indent(-2);
+					MainForm.Log("Processed " + symbolsCount + " out of " + symbolsMax + " symbols");
 					jobDone = true;
 					return null;
 				}
