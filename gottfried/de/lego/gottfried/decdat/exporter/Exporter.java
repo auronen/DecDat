@@ -48,8 +48,9 @@ public class Exporter {
 						label.setText(sym.id + " / " + max);
 						bar.setValue(sym.id);
 
-						if (sym.name.charAt(0) == '�' || sym.name.charAt(0) == '˙' || sym.name.charAt(0) == 'ÿ' || sym.name.charAt(0) == 'я')
-							if (sym.name.equalsIgnoreCase("�INSTANCE_HELP") || sym.name.equalsIgnoreCase("˙INSTANCE_HELP") || sym.name.equalsIgnoreCase("ÿINSTANCE_HELP") || sym.name.equalsIgnoreCase("яINSTANCE_HELP"))
+						if ((int)sym.name.charAt(0) == 255 )
+							if (sym.name.length() > 1 &&
+								sym.name.substring(1).equalsIgnoreCase("INSANCE_HELP"))
 								fos.write(("// " + Decompiler.get(sym).toString() + System.getProperty("line.separator")).getBytes(Charset.forName(MainForm.encoding)));
 							else {
 								MainForm.Log("skipping symbol " + sym.name + "(:" + sym.id + ")");
