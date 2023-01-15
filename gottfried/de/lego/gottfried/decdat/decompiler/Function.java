@@ -136,7 +136,7 @@ public class Function {
 		// Auronen: ignore the precedence and put brackets everywhere
 		//          the result of the logical expression is correct,
 		//          but it looks weird. 
-		//          TODO: Has to be imporved
+		//          TODO: Has to be improved
 		boolean brackets = true;//t.op.Precedence < parent;
 		StringBuilder ret = new StringBuilder();
 
