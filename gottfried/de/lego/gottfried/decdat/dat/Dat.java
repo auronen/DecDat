@@ -88,7 +88,7 @@ public class Dat {
 		IdSymbolPairs = new HashMap<Integer, DatSymbol>();
 
 		tokenSubstitutionsMap = new HashMap<String, Map<Integer, String>>();
-		for(Map.Entry<String, String> set : MainForm.tokenPrefixes.entrySet())
+		for(Map.Entry<String, Vector<String>> set : MainForm.tokenPrefixes.entrySet())
 			tokenSubstitutionsMap.put(set.getKey(), new HashMap<Integer, String>());
 
 		for(int i = 0; i < Symbols.length; ++i) {
@@ -98,12 +98,15 @@ public class Dat {
 			if(Symbols[i].name.length() != 0 && !Symbols[i].isLocal && Symbols[i].name.charAt(0) != 0xFF)
 				SymbolsRegular.add(Symbols[i]);
 
-			for(Map.Entry<String, String> set : MainForm.tokenPrefixes.entrySet())
-				if(Symbols[i].name.toLowerCase().startsWith(set.getValue())) {
-					int val = (Integer)Symbols[i].content[0];
-					if(tokenSubstitutionsMap.get(set.getKey()).get(val) == null)
-						tokenSubstitutionsMap.get(set.getKey()).put(val, Symbols[i].name.toLowerCase());
+			for(Map.Entry<String, Vector<String>> set : MainForm.tokenPrefixes.entrySet()) {
+				for (int vi = 0; vi < set.getValue().size(); vi++) {
+					if (Symbols[i].name.toLowerCase().startsWith(set.getValue().get(vi).toLowerCase())) {
+						int val = (Integer) Symbols[i].content[0];
+						if (tokenSubstitutionsMap.get(set.getKey()).get(val) == null)
+							tokenSubstitutionsMap.get(set.getKey()).put(val, Symbols[i].name.toLowerCase());
+					}
 				}
+			}
 		}
 	}
 
