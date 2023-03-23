@@ -47,7 +47,7 @@ import de.lego.gottfried.decdat.util.OUFileFilter;
 import de.lego.gottfried.decdat.parser.Ou;
 
 public class MainForm implements CaretListener, ActionListener, ListSelectionListener {
-	private static final String			VersionString	= "1.0c";
+	private static final String			VersionString	= "1.0d";
 	private static final String			logFile			= "d2.log";
 
 	protected static MainForm			inst;
@@ -66,7 +66,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	private static StringBuilder		sb				= new StringBuilder();
 	private static SimpleDateFormat		dfm				= new SimpleDateFormat("HH:mm:ss");
 
-	private static Object[]				encodings		= { "Windows-1250", "Windows-1251", "Windows-1252" };
+	private static Object[]				encodings		= { "Windows-1250", "Windows-1251", "Windows-1252", "UTF8" };
 	public static String				encoding;
 	public static Map<String, Vector<String>>	tokenPrefixes;
 

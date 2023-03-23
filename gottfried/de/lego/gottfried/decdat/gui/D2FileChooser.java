@@ -27,6 +27,7 @@ public class D2FileChooser extends JFileChooser {
 		setMultiSelectionEnabled(false);
 		setFileFilter(f);
 		setFileSelectionMode(mode);
+		setFileHidingEnabled(false);
 
 		if(lastFile != null)
 			setSelectedFile(lastFile);
