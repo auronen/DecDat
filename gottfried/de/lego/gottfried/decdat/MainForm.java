@@ -16,32 +16,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
@@ -64,27 +47,28 @@ import de.lego.gottfried.decdat.util.OUFileFilter;
 import de.lego.gottfried.decdat.parser.Ou;
 
 public class MainForm implements CaretListener, ActionListener, ListSelectionListener {
-	private static final String		VersionString	= "1.0c";
-	private static final String		logFile			= "d2.log";
+	private static final String			VersionString	= "1.0d";
+	private static final String			logFile			= "d2.log";
 
-	protected static MainForm		inst;
-	private List<DatSymbol>			currCol			= new LinkedList<DatSymbol>();
-	private List<zCCSBlock>			currColOU		= new LinkedList<zCCSBlock>();
-	private File					file;
+	protected static MainForm			inst;
+	private List<DatSymbol>				currCol			= new LinkedList<DatSymbol>();
+	private List<zCCSBlock>				currColOU		= new LinkedList<zCCSBlock>();
+	private File						file;
 
-	public static Dat				theDat;
-	public static Ou				theOU;
+	public static Dat					theDat;
+	public static Ou					theOU;
 
-	public static zCCSLib			ouLib;
-	public static boolean			ouLoaded = false;
+	public static zCCSLib				ouLib;
+	public static boolean				ouLoaded = false;
 
-	private static int				indent			= 2;
-	private static final String		idt				= "               ";
-	private static StringBuilder	sb				= new StringBuilder();
-	private static SimpleDateFormat	dfm				= new SimpleDateFormat("HH:mm:ss");
+	private static int					indent			= 2;
+	private static final String			idt				= "               ";
+	private static StringBuilder		sb				= new StringBuilder();
+	private static SimpleDateFormat		dfm				= new SimpleDateFormat("HH:mm:ss");
 
-	private static Object[]			encodings		= { "Windows-1250", "Windows-1251", "Windows-1252" };
-	public static String			encoding;
+	private static Object[]				encodings		= { "Windows-1250", "Windows-1251", "Windows-1252", "UTF8" };
+	public static String				encoding;
+	public static Map<String, Vector<String>>	tokenPrefixes;
 
 	private static void log(String i, String t) {
 		sb.setLength(0);
@@ -108,18 +92,24 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	}
 
 	public static void Err(String t) {
-		JOptionPane.showMessageDialog(frmDecdat, t, "Error", 0);
+		JOptionPane.showMessageDialog(frmDecdat, t, "Error", JOptionPane.ERROR_MESSAGE);
 	}
 
 	public static void Inf(String t) {
-		JOptionPane.showMessageDialog(frmDecdat, t, "Information", 1);
+		JOptionPane.showMessageDialog(frmDecdat, t, "Information", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	public static void Warn(String t) {
-		JOptionPane.showMessageDialog(frmDecdat, t, "Warning", 2);
+		JOptionPane.showMessageDialog(frmDecdat, t, "Warning", JOptionPane.WARNING_MESSAGE);
 	}
 
 	public static void main(String[] args) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e2) {
+			Err("Could not initialize system ui look & feel");
+		}
+
 		PrintStream ps;
 		try {
 			ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(new File(logFile))), true);
@@ -131,10 +121,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 			public void uncaughtException(Thread t, Throwable e) {
-				LogErr("unhandled exception occured: " + e.toString());
+				LogErr("unhandled exception occurred: " + e.toString());
 				e.printStackTrace();
 
-				JOptionPane.showMessageDialog(null, "An unhandled exception has occurred:\n  " + e.toString() + "\n\nMore informations in " + logFile, "Unhandled Exception", 0);
+				JOptionPane.showMessageDialog(null, "An unhandled exception has occurred:\n  " + e.toString() + "\n\nMore information in " + logFile, "Unhandled Exception", 0);
 			}
 		});
 
@@ -168,49 +158,104 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	}
 
 	private boolean selectEncoding() {
-		Object selection = JOptionPane.showInputDialog(null, null, "Select Encoding", JOptionPane.QUESTION_MESSAGE, null, encodings, encodings[0]);
+		Object selection = JOptionPane.showInputDialog(frmDecdat, null, "Select Encoding", JOptionPane.QUESTION_MESSAGE, null, encodings, encodings[0]);
 
 		if(selection == null)
 			return false;
 
 		encoding = selection.toString();
 
-		return (encoding.length() > 0) ? true : false;
+		return (encoding.length() > 0);
 	}
 
 	private boolean OUdialogue() {
 		int selection = JOptionPane.showConfirmDialog(null,
-		"Do you want to parse OU.bin?", "Dialoge parsing.",
-		JOptionPane.YES_NO_OPTION,
-		JOptionPane.QUESTION_MESSAGE);
+				"Do you want to parse OU.bin?", "Dialoge parsing.",
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE);
 
-		if(selection == JOptionPane.NO_OPTION)
-			return false;
-		else
-			return true;
+		return selection != JOptionPane.NO_OPTION;
 	}
 
-	private void selectDat() {
+	private boolean selectDat() {
 		if(getSelectedFile() == null)
-			return;
+			return false;
 
 		theDat = new Dat(file.getAbsolutePath());
 
 		if(!theDat.fileOk) {
 			Err("The specified DAT file could not be loaded.");
 			showSymbols(null);
-			return;
+			return false;
 		}
 
 		showSymbols(theDat.SymbolsC);
+
+		return true;
 	}
 
 	private void selectOU() {
-		if(getSelectedOUFile() == null)
+		File ouFile = null;
+		List<String> ouPaths = new ArrayList<String>();
+
+		File startDir = new File(MainForm.theDat.Dir);
+
+		for(String file : Objects.requireNonNull(startDir.list()))
+			if(file.equalsIgnoreCase("ou.bin"))
+				ouPaths.add(Paths.get(MainForm.theDat.Dir, file).normalize().toString());
+
+		File Path1 = new File(MainForm.theDat.Dir, "..");
+
+		for(String File1 : Objects.requireNonNull(Path1.list())) {
+			if(File1.equalsIgnoreCase("content")) {
+				File Path2 = new File(Path1, File1);
+				for(String File2 : Objects.requireNonNull(Path2.list())) {
+					if(File2.equalsIgnoreCase("cutscene")) {
+						File Path3 = new File(Path2, File2);
+						for(String File3 : Objects.requireNonNull(Path3.list())) {
+							if(File3.equalsIgnoreCase("ou.bin")) {
+								ouPaths.add(Paths.get(Path3.getAbsolutePath(), File3).normalize().toString());
+							}
+						}
+					}
+				}
+			}
+		}
+
+		ouPaths.add("Open file browser...");
+
+		JOptionPane ouPane = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null, new Object[]{"Import", "Don't import"}, null);
+		ouPane.setWantsInput(true);
+		ouPane.setSelectionValues(ouPaths.toArray());
+		ouPane.setInitialSelectionValue(ouPaths.toArray()[0]);
+		ouPane.setComponentOrientation(frmDecdat.getComponentOrientation());
+
+		JDialog ouDialog = ouPane.createDialog(frmDecdat, "OU.BIN import");
+		ouPane.selectInitialValue();
+
+		ouDialog.setVisible(true);
+		ouDialog.dispose();
+
+		if(ouPane.getValue() == null || ouPane.getValue().toString().equalsIgnoreCase("don't import"))
+			return;
+		else if(ouPane.getValue().toString().equalsIgnoreCase("import")) {
+			Object selection = ouPane.getInputValue();
+
+			if(selection.toString().equalsIgnoreCase("Open file browser...")) {
+				if(getSelectedOUFile() == null)
+					return;
+
+				ouFile = new File(file.getAbsolutePath());
+			} else {
+				ouFile = new File(selection.toString());
+			}
+		}
+
+		if(ouFile == null)
 			return;
 
 		try {
-			theOU = Ou.fromFile(file.getAbsolutePath());
+			theOU = Ou.fromFile(ouFile.getAbsolutePath());
 		} catch (Exception e) {
 			e.printStackTrace();
 			ouLoaded = false;
@@ -222,6 +267,34 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		//showOU(ou_lib.blocks);
 	}
 
+	private void createTokenPrefixesMap() {
+		tokenPrefixes = new HashMap<String, Vector<String>>();
+		String[] lines = txtrEditorSubstitution.getText().split("\\n");
+		for(String line : lines) {
+			line = line.trim();
+			if(line.length() == 0 || line.charAt(0) == ';')
+				continue;
+
+			String[] sub = line.split("[\\t]+");
+
+			if(sub.length < 2)
+				continue;
+
+			sub[0] = sub[0].trim().toLowerCase();
+			sub[1] = sub[1].trim().toLowerCase();
+
+			if(sub[0].length() == 0 || sub[1].length() == 0)
+				continue;
+
+			Vector<String> v = new Vector<String>();
+			String[] sub2 = sub[1].split(",");
+
+			for (String s : sub2) v.add(s.trim());
+
+			tokenPrefixes.put(sub[0], v);
+		}
+	}
+
 	private void searchSymbols() {
 		if(theDat == null)
 			return;
@@ -231,7 +304,9 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		else
 			switch(cbxSearch.getSelectedIndex()) {
 				case 0:
-					col = theDat.getAllSymbolIDs(txtKeyword.getText());
+					tblResults.changeSelection(Integer.valueOf(txtKeyword.getText()), 0, false, false);
+					col = theDat.SymbolsC;
+					// col = theDat.getAllSymbolIDs(txtKeyword.getText());
 					break;
 				case 1:
 					col = theDat.getAllSymbolsByName(txtKeyword.getText());
@@ -257,7 +332,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	}
 
 	/**
-	 * This function prints all parsed dialogues 
+	 * This function prints all parsed dialogues
 	 * @param sym List of all dialogues loaded from the OU.bin file
 	 */
 	private void showOU(List<zCCSBlock> sym) {
@@ -289,6 +364,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 	private JTextArea			txtrEditor;
 	private JTextArea			txtrEditorop;
 	private JTextArea			txtrEditorexp;
+	private JTextArea			txtrEditorSubstitution;
 	private JTabbedPane			tabbedPane;
 	private JTabbedPane			tabbedPane2;
 
@@ -313,7 +389,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					}
 					return;
 				case "Version":
-					JOptionPane.showMessageDialog(frmDecdat, "DecDat\nVersion " + VersionString + "\n\nvon Gottfried - 2012\n& Auronen - 2022\n& Auronen & fyryNy - 2023", "About", 1);
+					JOptionPane.showMessageDialog(frmDecdat, "DecDat\nVersion " + VersionString + "\n\nvon Gottfried - 2012\n& Auronen - 2022\n& Auronen & fyryNy - 2023", "About", JOptionPane.INFORMATION_MESSAGE);
 					return;
 
 				case "Tokens":
@@ -338,8 +414,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					if(!selectEncoding())
 						return;
 
-					selectDat();
-					if (OUdialogue())
+					createTokenPrefixesMap();
+					if(!selectDat())
+						return;
+					if (theDat.Name.equalsIgnoreCase("gothic.dat") || OUdialogue())
 						selectOU();
 					return;
 				case "Quit":
@@ -365,13 +443,19 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 							Inf("The export definition has been completely processed!");
 					return;
 				default:
-					if(tblResults.getSelectedRow() == -1) {
-						Warn("First, you have to select a symbol!");
+					int[] selectedRows = tblResults.getSelectedRows();
+					if(selectedRows.length > 0) {
+						LinkedList<DatSymbol> syms = new LinkedList<DatSymbol>();
+						for (int selectedRow : selectedRows)
+							syms.addLast(theDat.Symbols[(int) tblModel.getValueAt(selectedRow, 0)]);
+						if(getSelectedDFile() != null)
+							if(Exporter.ToFile(syms, file))
+								Inf("All selected symbols were successfully exported!");
+					}
+					else {
+						Warn("First, you have to select some symbols!");
 						return;
 					}
-					if(getSelectedDFile() != null)
-						if(Exporter.ToFile(theDat.Symbols[(int)tblModel.getValueAt(tblResults.getSelectedRow(), 0)], file))
-							Inf("The symbol was successfully exported!");
 			}
 
 		}
@@ -448,11 +532,11 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		panel1.add(btnSearch, BorderLayout.EAST);
 
 		tblResults = new JTable();
-		tblResults.setShowHorizontalLines(false);
+		tblResults.setShowHorizontalLines(true);
 		tblResults.getSelectionModel().addListSelectionListener(this);
 		tblResults.setFillsViewportHeight(true);
 		tblResults.setBorder(null);
-		tblResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tblResults.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		tblResults.setModel(tblModel = new D2TableModel(new String[] { "ID", "Symbolname", "Type" }));
 		tblResults.getColumnModel().getColumn(0).setPreferredWidth(50);
 		tblResults.getColumnModel().getColumn(0).setMinWidth(50);
@@ -568,6 +652,15 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		txtrEditorexp.setFont(new Font("Courier New", Font.PLAIN, 13));
 		scrollPane2.setViewportView(txtrEditorexp);
 
+		JScrollPane scrollPane3 = new JScrollPane();
+		tabbedPane.addTab("Token substitution", null, scrollPane3, null);
+
+		txtrEditorSubstitution = new JTextArea();
+		txtrEditorSubstitution.setText(";You need to edit this before loading .DAT file\n\n;aivar\t\taiv_, real_\nattribute\tatr_\nhitchance\tnpc_talent_\nprotection\tprot_\ndamage\t\tdam_index_");
+		txtrEditorSubstitution.setTabSize(4);
+		txtrEditorSubstitution.setFont(new Font("Courier New", Font.PLAIN, 13));
+		scrollPane3.setViewportView(txtrEditorSubstitution);
+
 		JMenuBar menuBar = new JMenuBar();
 		frmDecdat.setJMenuBar(menuBar);
 
@@ -597,7 +690,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 		mnExportieren.add(new JSeparator());
 
-		JMenuItem mntmAktuellesSymbol = new JMenuItem("Only selected Symbol...");
+		JMenuItem mntmAktuellesSymbol = new JMenuItem("Only selected Symbols...");
 		mntmAktuellesSymbol.addActionListener(this);
 		mnExportieren.add(mntmAktuellesSymbol);
 
@@ -643,7 +736,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		}
 		return false;
 	}
-	
+
 	public static boolean openWebpage(URL url) {
 		try {
 			return openWebpage(url.toURI());

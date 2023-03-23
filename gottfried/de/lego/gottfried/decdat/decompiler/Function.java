@@ -35,7 +35,7 @@ public class Function {
  
 				// by bfyryNy - fix for "forward declaration of member fields"
 				if (index == 0)
-					return ts.sym.nameGl;
+					return ts.sym.localName();
 
 				t = code[--index];
 				if (t.op == TokenEnum.zPAR_TOK_SETINSTANCE) {
@@ -61,12 +61,9 @@ public class Function {
 			else
 				val = 0;
 
-			// TODO: Add config for this option
-
-			//if(ts.sym.name.equalsIgnoreCase("c_npc.aivar"))
-			//	for(DatSymbol s : MainForm.theDat.Symbols)
-			//		if(s.name.toLowerCase().startsWith("aiv_") && (int)s.content[0] == val)
-			//			return ret + "[" + s.name + "]" + " /*aivar " + val + "*/";
+			if(MainForm.theDat.tokenSubstitutionsMap.get(ts.sym.localName()) != null)
+				if(MainForm.theDat.tokenSubstitutionsMap.get(ts.sym.localName()).get(val) != null)
+					return ret + "[" + MainForm.theDat.tokenSubstitutionsMap.get(ts.sym.localName()).get(val) + "]" + " /*" + val + "*/";
 
 			if (ts instanceof TokenArray)
 				ret += "[" + val + "]";
@@ -139,7 +136,7 @@ public class Function {
 		// Auronen: ignore the precedence and put brackets everywhere
 		//          the result of the logical expression is correct,
 		//          but it looks weird. 
-		//          TODO: Has to be imporved
+		//          TODO: Has to be improved
 		boolean brackets = true;//t.op.Precedence < parent;
 		StringBuilder ret = new StringBuilder();
 

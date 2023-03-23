@@ -14,6 +14,10 @@ public class DecompilerTokens extends Decompiler {
 
 	@Override
 	public String toString() {
+		//ArrayIndexOutOfBoundsException for tokens fix ?
+		if(symbol.content.length == 0)
+			return sb.toString();
+
 		Token[] toks = Token.DoStack((int)symbol.content[0], symbol.findFunctionEnd());
 
 		for(Token t : toks) {

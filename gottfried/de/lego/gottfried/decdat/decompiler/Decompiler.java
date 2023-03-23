@@ -10,6 +10,7 @@ import static de.lego.gottfried.decdat.dat.DatSymbol.Type.Instance;
 import static de.lego.gottfried.decdat.dat.DatSymbol.Type.Int;
 import static de.lego.gottfried.decdat.dat.DatSymbol.Type.Prototype;
 import static de.lego.gottfried.decdat.dat.DatSymbol.Type.String;
+import static de.lego.gottfried.decdat.dat.DatSymbol.Type.VariableArgument;
 import de.lego.gottfried.decdat.MainForm;
 import de.lego.gottfried.decdat.dat.DatSymbol;
 
@@ -24,6 +25,7 @@ public abstract class Decompiler {
 			case Int:
 			case String:
 			case Float:
+			case VariableArgument:
 				if(sym.hasFlags(Classvar))
 					return new DecompilerVariable(sym);
 				else if(sym.hasFlags(Const))

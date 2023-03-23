@@ -6,53 +6,52 @@ import java.util.Collections;
 import de.lego.gottfried.decdat.decompiler.Decompiler;
 
 public class DatSymbol {
-	public static int		cID				= 0;
+	public static int cID = 0;
 
-	public Dat				thedat;
-	public int				id;
-	public int				b_hasName;
-	public String			name;
-	public String			nameLo;
-	public String			nameGl;
-	public int				offset;
-	public int				bitfield;
+	public Dat thedat;
+	public int id;
+	public int b_hasName;
+	public String name;
+	public String nameLo;
+	public String nameGl;
+	public int offset;
+	public int bitfield;
 
-	public int				filenr;
-	public int				line;
-	public int				line_anz;
-	public int				pos_beg;
-	public int				pos_anz;
+	public int filenr;
+	public int line;
+	public int line_anz;
+	public int pos_beg;
+	public int pos_anz;
 
-	public int				parent;
-	public String			parentS;
+	public int parent;
+	public String parentS;
 
-	public Object[]			content;
+	public Object[] content;
 
-	public boolean			isLocal;
+	public boolean isLocal;
 
-	public static final int	bitfield_ele	= ((1 << 12) - 1) << 0;
-	public static final int	bitfield_type	= ((1 << 4) - 1) << 12;
-	public static final int	bitfield_flags	= ((1 << 6) - 1) << 16;
+	public static final int bitfield_ele = ((1 << 12) - 1) << 0;
+	public static final int bitfield_type = ((1 << 4) - 1) << 12;
+	public static final int bitfield_flags = ((1 << 6) - 1) << 16;
 
 	public final class Type {
-		public static final int
-								Void	= 0 << 12,
-										Float = 1 << 12,
-										Int = 2 << 12,
-										String = 3 << 12,
-										Class = 4 << 12,
-										Func = 5 << 12,
-										Prototype = 6 << 12,
-										Instance = 7 << 12;
+		public static final int Void = 0 << 12,
+				Float = 1 << 12,
+				Int = 2 << 12,
+				String = 3 << 12,
+				Class = 4 << 12,
+				Func = 5 << 12,
+				Prototype = 6 << 12,
+				Instance = 7 << 12,
+				VariableArgument = 8 << 12;
 	}
 
 	public final class Flag {
-		public static final int
-								Const	= 1 << 16,
-										Return = 2 << 16,
-										Classvar = 4 << 16,
-										External = 8 << 16,
-										Merged = 16 << 16;
+		public static final int Const = 1 << 16,
+				Return = 2 << 16,
+				Classvar = 4 << 16,
+				External = 8 << 16,
+				Merged = 16 << 16;
 	}
 
 	public DatSymbol(String n) {
@@ -81,21 +80,20 @@ public class DatSymbol {
 
 		isLocal = name.contains(".");
 
-		if((flags() & Flag.Classvar) == 0)
-		{
+		if ((flags() & Flag.Classvar) == 0) {
 			int type = type();
-			if(type == Type.Func || type == Type.Class || type == Type.Prototype)
+			if (type == Type.Func || type == Type.Class || type == Type.Prototype)
 				content = new Object[1];
 			else
 				content = new Object[ele()];
 
-			if(content.length == 0 && type == Type.Instance)
+			if (content.length == 0 && type == Type.Instance)
 				content = new Object[1];
 
-			for(int i = 0; i < content.length; ++i)
-				switch(type)
-				{
+			for (int i = 0; i < content.length; ++i)
+				switch (type) {
 					case Type.String:
+					case Type.VariableArgument:
 						content[i] = s.ReadString();
 						break;
 					case Type.Float:
@@ -111,7 +109,7 @@ public class DatSymbol {
 	}
 
 	public String localName() {
-		if(nameGl == null)
+		if (nameGl == null)
 			return nameGl = (isLocal ? name.split("\\.")[1] : name);
 		return nameGl;
 	}
@@ -162,12 +160,13 @@ public class DatSymbol {
 
 	public int sizeOf() {
 		int t = type();
-		switch(t) {
+		switch (t) {
 			case Type.Float:
 			case Type.Int:
 			case Type.Func:
 				return 4;
 			case Type.String:
+			case Type.VariableArgument:
 				return 20;
 		}
 		return offset;
@@ -181,7 +180,7 @@ public class DatSymbol {
 	}
 
 	public int findFunctionEnd() {
-		return thedat.functionOffsets.get(Collections.binarySearch(thedat.functionOffsets, (Integer)content[0]) + 1);
+		return thedat.functionOffsets.get(Collections.binarySearch(thedat.functionOffsets, (Integer) content[0]) + 1);
 	}
 
 	public boolean hasPrototype() {
@@ -200,16 +199,16 @@ public class DatSymbol {
 	public DatSymbol[] getLocalVars() {
 		ArrayList<DatSymbol> a = new ArrayList<DatSymbol>();
 		int cid = id + ele() + 1;
-		if(cid >= thedat.Symbols.length)
+		if (cid >= thedat.Symbols.length)
 			return new DatSymbol[] {};
 		DatSymbol curr;
-		while((curr = thedat.Symbols[cid++]).name.startsWith(name + '.'))
+		while ((curr = thedat.Symbols[cid++]).name.startsWith(name + '.'))
 			a.add(curr);
 		return a.toArray(new DatSymbol[a.size()]);
 	}
 
 	private String typeIntToString(int type) {
-		switch(type) {
+		switch (type) {
 			case Type.Void:
 				return "void";
 			case Type.Int:
@@ -220,13 +219,15 @@ public class DatSymbol {
 				return "float";
 			case Type.Prototype:
 			case Type.Instance:
-				if(parent == -1)
+				if (parent == -1)
 					return "__class";
 				return thedat.Symbols[parent].name;
 			case Type.Func:
 				return "func";
 			case Type.Class:
 				return "class";
+			case Type.VariableArgument:
+				return "va";
 		}
 		return "?";
 	}
@@ -234,26 +235,26 @@ public class DatSymbol {
 	public String flagsToString() {
 		StringBuilder sb = new StringBuilder();
 		int flags = flags();
-		if((flags & Flag.Const) > 0)
+		if ((flags & Flag.Const) > 0)
 			sb.append("const, ");
-		if((flags & Flag.Return) > 0)
+		if ((flags & Flag.Return) > 0)
 			sb.append("return, ");
-		if((flags & Flag.Classvar) > 0)
+		if ((flags & Flag.Classvar) > 0)
 			sb.append("classvar, ");
-		if((flags & Flag.External) > 0)
+		if ((flags & Flag.External) > 0)
 			sb.append("external, ");
-		if((flags & Flag.Merged) > 0)
+		if ((flags & Flag.Merged) > 0)
 			sb.append("merged  ");
-		if(sb.length() > 2)
+		if (sb.length() > 2)
 			sb.setLength(sb.length() - 2);
 		return sb.toString();
 	}
 
 	public String contentToString() {
-		if(content == null || content.length == 0)
+		if (content == null || content.length == 0)
 			return "";
 		StringBuilder res = new StringBuilder();
-		for(Object o : content)
+		for (Object o : content)
 			res.append(o).append(", ");
 		res.setLength(res.length() - 2);
 		return res.toString();
@@ -276,13 +277,13 @@ public class DatSymbol {
 	}
 
 	public String getTypeString() {
-		switch(type()) {
+		switch (type()) {
 			case Type.Instance:
 				return "instance(" + typeToString() + ')';
 			case Type.Prototype:
 				return "prototype(" + typeToString() + ')';
 			case Type.Func:
-				if(!hasFlags(Flag.Const))
+				if (!hasFlags(Flag.Const))
 					break;
 				return "func " + getReturn();
 			case Type.Class:

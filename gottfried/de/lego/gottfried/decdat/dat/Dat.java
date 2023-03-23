@@ -9,7 +9,9 @@ import de.lego.gottfried.decdat.MainForm;
 
 public class Dat {
 	public DatStream				Stream;
+	public String					Dir;
 	public String					Path;
+	public String					Name;
 	public int						Version;
 	public DatSymbol				Symbols[];
 	public LinkedList<DatSymbol>	SymbolsC;
@@ -21,6 +23,7 @@ public class Dat {
 	public ArrayList<DatSymbol>		functionSymbols;
 	public ArrayList<Integer>		functionOffsets;
 	public boolean					fileOk;
+	public Map<String, Map<Integer, String>> tokenSubstitutionsMap;
 
 	public Dat(String path) {
 		DatSymbol.cID = 0;
@@ -30,6 +33,8 @@ public class Dat {
 		byte b[];
 		try {
 			File file = new File(Path);
+			Dir = file.getAbsoluteFile().getParent();
+			Name = file.getName();
 			FileInputStream fis = new FileInputStream(file);
 			b = new byte[(int)file.length()];
 			fis.read(b);
@@ -81,15 +86,30 @@ public class Dat {
 		SymbolsC = new LinkedList<DatSymbol>();
 		SymbolsRegular = new LinkedList<DatSymbol>();
 		IdSymbolPairs = new HashMap<Integer, DatSymbol>();
+
+		tokenSubstitutionsMap = new HashMap<String, Map<Integer, String>>();
+		for(Map.Entry<String, Vector<String>> set : MainForm.tokenPrefixes.entrySet())
+			tokenSubstitutionsMap.put(set.getKey(), new HashMap<Integer, String>());
+
 		for(int i = 0; i < Symbols.length; ++i) {
 			Symbols[i] = new DatSymbol(this, Stream);
 			SymbolsC.add(Symbols[i]);
 			IdSymbolPairs.put(Symbols[i].id, Symbols[i]);
 			if(Symbols[i].name.length() != 0 && !Symbols[i].isLocal && Symbols[i].name.charAt(0) != 0xFF)
 				SymbolsRegular.add(Symbols[i]);
+
+			for(Map.Entry<String, Vector<String>> set : MainForm.tokenPrefixes.entrySet()) {
+				for (int vi = 0; vi < set.getValue().size(); vi++) {
+					if (Symbols[i].name.toLowerCase().startsWith(set.getValue().get(vi).toLowerCase())) {
+						int val = (Integer) Symbols[i].content[0];
+						if (tokenSubstitutionsMap.get(set.getKey()).get(val) == null)
+							tokenSubstitutionsMap.get(set.getKey()).put(val, Symbols[i].name.toLowerCase());
+					}
+				}
+			}
 		}
 	}
-	
+
 	private void ReadStack() {
 		int i;
 		MainForm.Log("read datastack of length " + (i = Stream.ReadInt()));
