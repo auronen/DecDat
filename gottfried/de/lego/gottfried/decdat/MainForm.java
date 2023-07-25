@@ -44,6 +44,7 @@ import de.lego.gottfried.decdat.ou.zCCSLib;
 import de.lego.gottfried.decdat.util.DaedalusFileFilter;
 import de.lego.gottfried.decdat.util.DatFileFilter;
 import de.lego.gottfried.decdat.util.OUFileFilter;
+import de.lego.gottfried.decdat.util.TokenFileFilter;
 import de.lego.gottfried.decdat.parser.Ou;
 
 public class MainForm implements CaretListener, ActionListener, ListSelectionListener {
@@ -151,6 +152,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 
 	private File getSelectedDFile() {
 		return file = D2FileChooser.get(DaedalusFileFilter.inst);
+	}
+
+	private File getSelectedTokenFile() {
+		return file = D2FileChooser.get(TokenFileFilter.inst);
 	}
 
 	private File getSelectedDirectory() {
@@ -417,6 +422,7 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					createTokenPrefixesMap();
 					if(!selectDat())
 						return;
+					frmDecdat.setTitle("DecDat " + VersionString + " - " + theDat.Name);
 					if (theDat.Name.equalsIgnoreCase("gothic.dat") || OUdialogue())
 						selectOU();
 					return;
@@ -441,6 +447,15 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 					if(getSelectedDirectory() != null)
 						if(Exporter.ToFile(txtrEditorexp.getText(), file))
 							Inf("The export definition has been completely processed!");
+					return;
+				case "Tokens...":
+					if(theDat == null) {
+						Err("No DAT file loaded yet!");
+						return;
+					}
+					if(getSelectedTokenFile() != null)
+						if(Exporter.TokensToFile(theDat.SymbolsRegular, file))
+							Inf("All tokens were successfully exported!");
 					return;
 				default:
 					int[] selectedRows = tblResults.getSelectedRows();
@@ -687,6 +702,10 @@ public class MainForm implements CaretListener, ActionListener, ListSelectionLis
 		JMenuItem mntmNachSymbolid = new JMenuItem("With export definitions...");
 		mntmNachSymbolid.addActionListener(this);
 		mnExportieren.add(mntmNachSymbolid);
+
+		JMenuItem mntmAllSymbolsTokes = new JMenuItem("Tokens...");
+		mntmAllSymbolsTokes.addActionListener(this);
+		mnExportieren.add(mntmAllSymbolsTokes);
 
 		mnExportieren.add(new JSeparator());
 

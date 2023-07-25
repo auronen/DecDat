@@ -10,10 +10,10 @@ public class zCCSBlock {
     public String   wavFile;
 
     // Create new zCCSBlock
-    public zCCSBlock(String id, String text, String wavFile) {
+    public zCCSBlock(String id, String text/*, String wavFile*/) {
         this.id = id;
         this.text = text;
-        this.wavFile = wavFile;
+        //this.wavFile = wavFile;
     }
     
 }

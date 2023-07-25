@@ -19,8 +19,8 @@ public class zCCSLib {
         {
             String id    = ((TypeOuString)ou_file.zClib().properties().get(i).properties().get(2 ).propBody()).objectId();
             String text  = ((TypeOuString)ou_file.zClib().properties().get(i).properties().get(12).propBody()).objectId();
-            String sound = ((TypeOuString)ou_file.zClib().properties().get(i).properties().get(14).propBody()).objectId();
-            blocks.put(id.toUpperCase(), new zCCSBlock(id, text, sound));
+            //String sound = ((TypeOuString)ou_file.zClib().properties().get(i).properties().get(14).propBody()).objectId();
+            blocks.put(id.toUpperCase(), new zCCSBlock(id, text/* , sound*/));
         }
         MainForm.Log("valid ou.bin loaded");
         MainForm.Indent(-2);

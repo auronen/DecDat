@@ -99,6 +99,83 @@ public class Exporter {
 		return ret;
 	}
 
+	private static boolean TokenstoFile(Collection<DatSymbol> syms, File file) {
+		FileOutputStream fos;
+		long startTime = System.nanoTime();
+		try {
+			file.getParentFile().mkdirs();
+			fos = new FileOutputStream(file);
+			symbolsMax = syms.size();
+			symbolsCount = 0;
+			jobDone = false;
+
+			JOptionPane pane = new JOptionPane("Exporting...", JOptionPane.INFORMATION_MESSAGE);
+			JDialog dialog = pane.createDialog(MainForm.frmDecdat, "Information");
+			JLabel label = new JLabel("0 / " + symbolsMax, JLabel.CENTER);
+			JProgressBar bar = new JProgressBar(0, symbolsMax);
+			pane.setOptions(new Object[]{});
+			pane.add(label, 1);
+			pane.add(bar, 2);
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+			SwingWorker<Void, Void> sw = new SwingWorker<Void,Void>() {
+				@Override
+				protected Void doInBackground() throws Exception {
+					for(DatSymbol sym : syms) {
+						symbolsCount++;
+						label.setText(symbolsCount + " / " + symbolsMax);
+						bar.setValue(symbolsCount);
+
+							/* */
+							Decompiler p = Decompiler.getOP(sym);
+							if (p == null) {
+							} else {
+								fos.write(sym.name.getBytes());
+								fos.write('\n');
+								fos.write(
+									(p.toString()).getBytes());
+							}
+							/* */
+					}
+					MainForm.Log("Processed " + symbolsCount + " out of " + symbolsMax + " symbols");
+					jobDone = true;
+					return null;
+				}
+
+				@Override
+				protected void done() {
+					dialog.dispose();
+				}
+			};
+
+			sw.execute();
+			dialog.setVisible(true);
+			fos.close();
+		} catch(FileNotFoundException e) {
+			MainForm.LogErr("file '" + file + "' not found.");
+			MainForm.Err("File '" + file + "' not found.");
+			return false;
+		} catch(IOException e) {
+			MainForm.LogErr("error while writing to the file '" + file + "'");
+			MainForm.Err("Error while writing to the file '" + file + "'");
+			e.printStackTrace();
+			return false;
+		}
+		long finishTime = System.nanoTime();
+		long elapsedTime = (finishTime - startTime)/1000000;
+		MainForm.Log("elapsed execution time: " + elapsedTime + "ms");
+		return jobDone;
+	}
+
+	public static boolean TokensToFile(Collection<DatSymbol> syms, File file) {
+		MainForm.Log("start exporting tokens");
+		MainForm.Indent(2);
+
+		boolean ret = TokenstoFile(syms, file);
+
+		MainForm.Indent(-2);
+		return ret;
+	}
 	public static boolean ToFile(DatSymbol sym, File file) {
 		MainForm.Log("start exporting single symbol");
 		MainForm.Indent(2);
